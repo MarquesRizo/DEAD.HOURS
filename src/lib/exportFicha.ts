@@ -34,15 +34,13 @@ export interface FichaData {
 
 /**
  * Gera e baixa a ficha preenchida como imagem PNG em alta resolução (1024x1536)
- * utilizando a arte oficial de referência de DEAD HOURS como base.
+ * desenhando os dados preenchidos diretamente sobre a arte oficial de DEAD HOURS.
  */
 export async function downloadFichaPNG(data: FichaData): Promise<void> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = '/images/ficha-base.jpg';
 
-    img.onload = () => {
+    const renderCanvas = () => {
       try {
         const canvas = document.createElement('canvas');
         canvas.width = 1024;
@@ -52,89 +50,91 @@ export async function downloadFichaPNG(data: FichaData): Promise<void> {
           throw new Error('Não foi possível obter contexto 2D do canvas.');
         }
 
-        // Desenha imagem de fundo oficial
+        // 1. Desenha a imagem base oficial de fundo
         ctx.drawImage(img, 0, 0, 1024, 1536);
 
-        // Configuração de estilo de texto (estilo máquina de escrever/caneta grafite escura)
-        ctx.fillStyle = '#1c1916';
-        ctx.textBaseline = 'bottom';
+        // 2. Estilos de texto (tinta escura estilo máquina de escrever / caneta)
+        const darkInk = '#121212';
+        const redStamp = '#781D24';
 
-        const drawSingleLine = (
+        const drawLine = (
           text: string,
           x: number,
-          lineY: number,
+          baselineY: number,
           maxWidth: number,
-          fontSize = 18
+          fontSize = 15
         ) => {
           if (!text) return;
           ctx.save();
           let currentSize = fontSize;
-          ctx.font = `600 ${currentSize}px "IBM Plex Mono", "Courier New", monospace`;
-          while (ctx.measureText(text).width > maxWidth && currentSize > 10) {
+          ctx.fillStyle = darkInk;
+          ctx.textBaseline = 'alphabetic';
+          ctx.font = `bold ${currentSize}px "Courier New", "IBM Plex Mono", monospace`;
+
+          // Auto-ajuste de tamanho caso o texto seja longo
+          while (ctx.measureText(text).width > maxWidth && currentSize > 9) {
             currentSize -= 1;
-            ctx.font = `600 ${currentSize}px "IBM Plex Mono", "Courier New", monospace`;
+            ctx.font = `bold ${currentSize}px "Courier New", "IBM Plex Mono", monospace`;
           }
-          ctx.fillText(text, x, lineY - 3);
+
+          ctx.fillText(text, x, baselineY);
           ctx.restore();
         };
 
-        const drawCentered = (
-          text: string,
-          centerX: number,
-          lineY: number,
-          fontSize = 24
-        ) => {
+        const drawAttr = (text: string, centerX: number, centerY: number) => {
           if (!text) return;
           ctx.save();
-          ctx.font = `bold ${fontSize}px "IBM Plex Mono", "Courier New", monospace`;
+          ctx.fillStyle = darkInk;
           ctx.textAlign = 'center';
-          ctx.fillText(text, centerX, lineY);
+          ctx.textBaseline = 'middle';
+          ctx.font = 'bold 24px "Impact", "Arial Black", sans-serif';
+          ctx.fillText(text, centerX, centerY);
           ctx.restore();
         };
 
-        // 1. Identificação
-        drawSingleLine(data.nomeJogador, 485, 230, 440, 18);
-        drawSingleLine(data.nomePersonagem, 530, 260, 395, 18);
-        drawSingleLine(data.idade, 415, 296, 65, 17);
-        drawSingleLine(data.aparencia, 445, 346, 480, 16);
-        drawSingleLine(data.personalidade, 475, 389, 450, 16);
-        drawSingleLine(data.ocupacao, 630, 429, 295, 16);
+        // --- 1. IDENTIFICAÇÃO ---
+        drawLine(data.nomeJogador, 505, 325, 415, 16);
+        drawLine(data.nomePersonagem, 550, 360, 370, 16);
+        drawLine(data.idade, 425, 390, 65, 15);
+        drawLine(data.aparencia, 460, 422, 460, 14);
+        drawLine(data.personalidade, 490, 455, 430, 14);
+        drawLine(data.ocupacao, 655, 485, 265, 14);
 
-        // 2. Atributos (caixas à esquerda, centralizado no box de x: 247 a 365, centro em 306)
-        drawCentered(data.forca, 306, 526, 24);
-        drawCentered(data.agilidade, 306, 577, 24);
-        drawCentered(data.vigor, 306, 628, 24);
-        drawCentered(data.intelecto, 306, 679, 24);
-        drawCentered(data.percepcao, 306, 730, 24);
-        drawCentered(data.presenca, 306, 781, 24);
+        // --- 2. ATRIBUTOS (Centro das caixas na coluna esquerda x=298) ---
+        drawAttr(data.forca, 298, 480);
+        drawAttr(data.agilidade, 298, 542);
+        drawAttr(data.vigor, 298, 605);
+        drawAttr(data.intelecto, 298, 668);
+        drawAttr(data.percepcao, 298, 731);
+        drawAttr(data.presenca, 298, 792);
 
-        // 3. Especializações
-        drawSingleLine(data.esp1, 455, 513, 470, 16);
-        drawSingleLine(data.esp2, 455, 552, 470, 16);
+        // --- 3. ESPECIALIZAÇÕES ---
+        drawLine(data.esp1, 475, 470, 445, 15);
+        drawLine(data.esp2, 475, 502, 445, 15);
 
-        // 4. Histórico
-        drawSingleLine(data.objetivo, 585, 597, 340, 16);
-        drawSingleLine(data.medo, 535, 638, 390, 16);
-        drawSingleLine(data.ligacao, 735, 678, 190, 15);
-        drawSingleLine(data.segredo, 625, 724, 300, 16);
+        // --- 4. HISTÓRICO ---
+        drawLine(data.objetivo, 605, 582, 315, 14);
+        drawLine(data.medo, 560, 614, 360, 14);
+        drawLine(data.ligacao, 760, 644, 160, 13);
+        drawLine(data.segredo, 645, 674, 275, 14);
 
-        // 5. Equipamento Inicial
-        drawSingleLine(data.arma, 125, 874, 330, 16);
-        drawSingleLine(data.ferramenta, 175, 925, 280, 16);
-        drawSingleLine(data.outrosItens, 180, 976, 275, 16);
+        // --- 5. EQUIPAMENTO INICIAL ---
+        drawLine(data.arma, 145, 1120, 310, 14);
+        drawLine(data.ferramenta, 195, 1175, 260, 14);
+        drawLine(data.outrosItens, 200, 1230, 255, 14);
 
-        // 6. Declaração
+        // --- 6. DECLARAÇÃO ---
         if (data.declaracaoLida) {
           ctx.save();
-          ctx.font = 'bold 20px "IBM Plex Mono", monospace';
-          ctx.fillStyle = '#781D24';
-          ctx.fillText('✓', 505, 895);
+          ctx.fillStyle = redStamp;
+          ctx.font = 'bold 20px "Arial", sans-serif';
+          ctx.fillText('✓', 515, 1120);
           ctx.restore();
         }
 
-        drawSingleLine(data.assinatura, 705, 1001, 220, 16);
+        drawLine(data.assinatura, 730, 1270, 190, 14);
 
-        // Converte para blob e faz download
+        // Converte para blob e inicia download
         canvas.toBlob((blob) => {
           if (!blob) {
             reject(new Error('Falha ao gerar arquivo de imagem.'));
@@ -156,19 +156,27 @@ export async function downloadFichaPNG(data: FichaData): Promise<void> {
       }
     };
 
+    img.onload = renderCanvas;
     img.onerror = () => {
       reject(new Error('Não foi possível carregar a imagem base da ficha.'));
     };
+
+    img.src = '/images/ficha-base.jpg';
+
+    // Se a imagem já estiver no cache do navegador, força a execução
+    if (img.complete) {
+      renderCanvas();
+    }
   });
 }
 
 /**
  * Gera e baixa a ficha em formato PDF interativo com campos AcroForm editáveis
- * sobre a arte oficial de fundo de DEAD HOURS.
+ * sobre a arte oficial de DEAD HOURS, sem o erro de /DA.
  */
 export async function downloadFichaPDF(data: FichaData): Promise<void> {
   const bgBytes = await fetch('/images/ficha-base.jpg').then((res) => {
-    if (!res.ok) throw new Error('Falha ao baixar imagem de fundo da ficha.');
+    if (!res.ok) throw new Error('Falha ao carregar a imagem de fundo da ficha.');
     return res.arrayBuffer();
   });
 
@@ -187,8 +195,8 @@ export async function downloadFichaPDF(data: FichaData): Promise<void> {
   const form = pdfDoc.getForm();
   const font = await pdfDoc.embedFont(StandardFonts.CourierBold);
 
-  // Helper para criar campo de texto transparente posicionado sobre a linha
-  // Lembrar: em PDF, y=0 fica no canto inferior esquerdo (bottom-left)
+  // Helper para criar campo interativo editável
+  // PDF usa coordenadas a partir do canto inferior esquerdo (y=0 na base)
   const addField = (
     name: string,
     val: string,
@@ -199,65 +207,71 @@ export async function downloadFichaPDF(data: FichaData): Promise<void> {
     fontSize = 14
   ) => {
     const field = form.createTextField(name);
-    field.setText(val || '');
-    field.setFontSize(fontSize);
     field.addToPage(page, {
       x,
       y: 1536 - topY,
       width,
       height,
       borderWidth: 0,
-      textColor: rgb(0.1, 0.09, 0.08),
+      textColor: rgb(0.08, 0.08, 0.08),
     });
+
+    // Configura a aparência padrão com a fonte embutida antes de setFontSize
+    field.defaultUpdateAppearances(font);
+    field.setFontSize(fontSize);
+    field.setText(val || '');
     return field;
   };
 
-  // 1. Identificação
-  addField('nome_jogador', data.nomeJogador, 485, 236, 440, 24, 15);
-  addField('nome_personagem', data.nomePersonagem, 530, 266, 395, 24, 15);
-  addField('idade', data.idade, 415, 302, 70, 24, 15);
-  addField('aparencia', data.aparencia, 445, 352, 480, 24, 14);
-  addField('personalidade', data.personalidade, 475, 395, 450, 24, 14);
-  addField('ocupacao', data.ocupacao, 630, 435, 295, 24, 14);
+  // --- 1. IDENTIFICAÇÃO ---
+  addField('nome_jogador', data.nomeJogador, 505, 332, 415, 24, 15);
+  addField('nome_personagem', data.nomePersonagem, 550, 370, 370, 24, 15);
+  addField('idade', data.idade, 425, 400, 65, 24, 14);
+  addField('aparencia', data.aparencia, 460, 432, 460, 24, 13);
+  addField('personalidade', data.personalidade, 490, 465, 430, 24, 13);
+  addField('ocupacao', data.ocupacao, 655, 495, 265, 24, 13);
 
-  // 2. Atributos (boxes centralizados)
-  addField('attr_forca', data.forca, 280, 528, 55, 32, 20);
-  addField('attr_agilidade', data.agilidade, 280, 579, 55, 32, 20);
-  addField('attr_vigor', data.vigor, 280, 630, 55, 32, 20);
-  addField('attr_intelecto', data.intelecto, 280, 681, 55, 32, 20);
-  addField('attr_percepcao', data.percepcao, 280, 732, 55, 32, 20);
-  addField('attr_presenca', data.presenca, 280, 783, 55, 32, 20);
+  // --- 2. ATRIBUTOS (Boxes na coluna esquerda) ---
+  addField('attr_forca', data.forca, 260, 495, 80, 32, 22);
+  addField('attr_agilidade', data.agilidade, 260, 558, 80, 32, 22);
+  addField('attr_vigor', data.vigor, 260, 622, 80, 32, 22);
+  addField('attr_intelecto', data.intelecto, 260, 685, 80, 32, 22);
+  addField('attr_percepcao', data.percepcao, 260, 748, 80, 32, 22);
+  addField('attr_presenca', data.presenca, 260, 810, 80, 32, 22);
 
-  // 3. Especializações
-  addField('especializacao_1', data.esp1, 455, 519, 470, 24, 14);
-  addField('especializacao_2', data.esp2, 455, 558, 470, 24, 14);
+  // --- 3. ESPECIALIZAÇÕES ---
+  addField('especializacao_1', data.esp1, 475, 480, 445, 24, 14);
+  addField('especializacao_2', data.esp2, 475, 512, 445, 24, 14);
 
-  // 4. Histórico
-  addField('objetivo_pessoal', data.objetivo, 585, 603, 340, 24, 14);
-  addField('maior_medo', data.medo, 535, 644, 390, 24, 14);
-  addField('ligacao_sobrevivente', data.ligacao, 735, 684, 190, 24, 13);
-  addField('segredo_conflito', data.segredo, 625, 730, 300, 24, 14);
+  // --- 4. HISTÓRICO ---
+  addField('objetivo_pessoal', data.objetivo, 605, 592, 315, 24, 13);
+  addField('maior_medo', data.medo, 560, 624, 360, 24, 13);
+  addField('ligacao_sobrevivente', data.ligacao, 760, 654, 160, 24, 12);
+  addField('segredo_conflito', data.segredo, 645, 684, 275, 24, 13);
 
-  // 5. Equipamento Inicial
-  addField('equip_arma', data.arma, 125, 880, 330, 24, 14);
-  addField('equip_ferramenta', data.ferramenta, 175, 931, 280, 24, 14);
-  addField('equip_outros', data.outrosItens, 180, 982, 275, 24, 14);
+  // --- 5. EQUIPAMENTO INICIAL ---
+  addField('equip_arma', data.arma, 145, 1130, 310, 24, 13);
+  addField('equip_ferramenta', data.ferramenta, 195, 1185, 260, 24, 13);
+  addField('equip_outros', data.outrosItens, 200, 1240, 255, 24, 13);
 
-  // 6. Declaração
-  const declaracaoCheck = form.createCheckBox('declaracao_lida');
+  // --- 6. DECLARAÇÃO ---
+  const chk = form.createCheckBox('declaracao_lida');
   if (data.declaracaoLida) {
-    declaracaoCheck.check();
+    chk.check();
   }
-  declaracaoCheck.addToPage(page, {
-    x: 495,
-    y: 1536 - 905,
-    width: 16,
-    height: 16,
+  chk.addToPage(page, {
+    x: 512,
+    y: 1536 - 1135,
+    width: 18,
+    height: 18,
     borderWidth: 1,
     borderColor: rgb(0.47, 0.11, 0.14),
   });
 
-  addField('assinatura_jogador', data.assinatura, 705, 1007, 220, 24, 14);
+  addField('assinatura_jogador', data.assinatura, 730, 1280, 190, 24, 14);
+
+  // Atualiza as aparências de todos os campos do formulário com a fonte embutida
+  form.updateFieldAppearances(font);
 
   const pdfBytes = await pdfDoc.save();
   const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
