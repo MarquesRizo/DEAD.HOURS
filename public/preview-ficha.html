@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEAD HOURS — Ficha de Sobrevivente (Prévia Visual)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&family=Reenie+Beanie&family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #090909;
+      --bg-card: #131313;
+      --bg-card-alt: #181818;
+      --border-main: #333333;
+      --border-accent: #781D24;
+      --red-blood: #781D24;
+      --red-bright: #9E2A34;
+      --red-dark: #4B1117;
+      --text-main: #E3DED3;
+      --text-muted: #7A766F;
+      --text-gold: #C3BBA9;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #040404;
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 30px 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Container formato documento padrão (1000px de largura proporcional a A4) */
+    .document-sheet {
+      width: 1000px;
+      background-color: var(--bg-deep);
+      border: 2px solid var(--border-main);
+      position: relative;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(120, 29, 36, 0.3);
+      padding: 36px 40px;
+      background-image: 
+        radial-gradient(rgba(195, 187, 169, 0.04) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 16px 16px, 40px 40px, 40px 40px;
+    }
+
+    /* Marcadores táticos nos 4 cantos */
+    .crosshair-tl { position: absolute; top: 10px; left: 10px; color: var(--border-accent); font-family: 'IBM Plex Mono'; font-size: 12px; }
+    .crosshair-tr { position: absolute; top: 10px; right: 10px; color: var(--border-accent); font-family: 'IBM Plex Mono'; font-size: 12px; }
+    .crosshair-bl { position: absolute; bottom: 10px; left: 10px; color: var(--border-accent); font-family: 'IBM Plex Mono'; font-size: 12px; }
+    .crosshair-br { position: absolute; bottom: 10px; right: 10px; color: var(--border-accent); font-family: 'IBM Plex Mono'; font-size: 12px; }
+
+    /* Faixa de alerta superior */
+    .top-security-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--red-dark);
+      border: 1px solid var(--red-blood);
+      padding: 4px 14px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: #FFFFFF;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    /* Cabeçalho do Dossiê */
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 2px solid var(--border-accent);
+      padding-bottom: 16px;
+      margin-bottom: 22px;
+    }
+
+    .header-branding {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-logo-box {
+      width: 58px;
+      height: 58px;
+      background: var(--bg-card);
+      border: 2px solid var(--red-blood);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+      color: var(--text-main);
+      box-shadow: inset 0 0 12px rgba(120, 29, 36, 0.4);
+    }
+    .brand-logo-box .dh-initials { font-size: 26px; line-height: 1; letter-spacing: 1px; }
+    .brand-logo-box .dh-sub { font-size: 8px; font-family: 'IBM Plex Mono'; color: var(--red-bright); letter-spacing: 2px; }
+
+    .header-titles h1 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 32px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .header-titles .subtitle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text-gold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .header-meta {
+      text-align: right;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .header-meta strong { color: var(--text-main); }
+    .header-meta .tag-active {
+      display: inline-block;
+      background: var(--red-blood);
+      color: white;
+      padding: 1px 6px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    /* Títulos de Seções */
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #181818 0%, #101010 100%);
+      border-left: 4px solid var(--red-blood);
+      border-top: 1px solid var(--border-main);
+      border-right: 1px solid var(--border-main);
+      border-bottom: 1px solid var(--border-main);
+      padding: 6px 12px;
+      margin-bottom: 10px;
+    }
+    .section-title span.title-text {
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+    .section-title span.title-code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* MÓDULO 1: IDENTIFICAÇÃO E FOTO TÁTICA */
+    .id-grid-container {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .id-fields-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      padding: 14px 16px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .field-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .field-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+    }
+
+    .field-value {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border-bottom: 1px solid var(--border-main);
+      padding: 4px 6px;
+      min-height: 26px;
+    }
+    .field-value.highlight-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: #FFFFFF;
+      border-bottom: 1px solid var(--red-blood);
+    }
+
+    /* Retângulo de Foto / Dossiê Facial */
+    .photo-dossier-box {
+      background: var(--bg-card);
+      border: 1px dashed var(--border-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      position: relative;
+      text-align: center;
+    }
+    .photo-dossier-box .photo-silhouette {
+      width: 72px;
+      height: 72px;
+      opacity: 0.25;
+      margin-bottom: 6px;
+    }
+    .photo-dossier-box .photo-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 8px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .photo-dossier-box .stamp-triagem {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      border: 1px solid var(--red-blood);
+      background: rgba(120, 29, 36, 0.85);
+      color: white;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 8px;
+      font-weight: 700;
+      padding: 2px 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transform: rotate(-6deg);
+    }
+
+    /* MÓDULO 2: ATRIBUTOS (INSPIRED BY ORDEM, CRAFTED FOR DEAD HOURS) */
+    .attributes-section {
+      margin-bottom: 20px;
+    }
+
+    .attributes-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .attribute-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .attr-header {
+      width: 100%;
+      background: #1A1A1A;
+      border-bottom: 1px solid var(--border-main);
+      text-align: center;
+      padding: 4px 0;
+      font-family: 'Oswald', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      color: var(--text-gold);
+    }
+    .attr-header.highlight {
+      border-bottom-color: var(--red-blood);
+      color: #FFFFFF;
+    }
+
+    .attr-value-box {
+      padding: 12px 0 8px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text-main);
+    }
+    .attr-value-box.prime {
+      color: #FFFFFF;
+      text-shadow: 0 0 10px rgba(120, 29, 36, 0.5);
+    }
+
+    .attr-footer-desc {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 8px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 4px 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* MÓDULO 3: MONITORES VITAIS DE COMBATE */
+    .vital-monitors-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .vital-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      padding: 8px 12px;
+      position: relative;
+    }
+    .vital-card.life-card { border-left: 3px solid var(--red-blood); }
+    .vital-card.stamina-card { border-left: 3px solid #8B6B23; }
+    .vital-card.defense-card { border-left: 3px solid #385E8A; }
+    .vital-card.cargo-card { border-left: 3px solid #4D7358; }
+
+    .vital-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .vital-top .formula { font-size: 8px; color: var(--text-muted); opacity: 0.8; }
+
+    .vital-value-display {
+      font-family: 'Oswald', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #FFFFFF;
+      line-height: 1.1;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .vital-value-display span.unit {
+      font-size: 11px;
+      font-family: 'IBM Plex Mono';
+      color: var(--text-gold);
+      font-weight: 400;
+    }
+
+    /* Segmentos de tracking de dano/gasto */
+    .vital-tracker-dots {
+      display: flex;
+      gap: 3px;
+      margin-top: 6px;
+    }
+    .vital-dot {
+      width: 7px;
+      height: 7px;
+      background: #252525;
+      border: 1px solid #414141;
+    }
+    .vital-dot.filled-red { background: var(--red-blood); border-color: var(--red-bright); }
+    .vital-dot.filled-gold { background: #8B6B23; border-color: #C3BBA9; }
+
+    /* ESPECIALIZAÇÕES (+2) */
+    .specs-strip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .specs-strip .strip-label {
+      font-family: 'Oswald', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-gold);
+      white-space: nowrap;
+    }
+    .specs-pills-container {
+      display: flex;
+      gap: 12px;
+      flex: 1;
+    }
+    .spec-pill {
+      background: #1C1C1C;
+      border: 1px solid var(--border-main);
+      border-left: 2px solid var(--red-blood);
+      padding: 4px 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--text-main);
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .spec-pill strong { color: var(--red-bright); }
+
+    /* MÓDULO 4: PERFIL NARRATIVO (APARÊNCIA & PERSONALIDADE) */
+    .narrative-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .narrative-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .narrative-block .block-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--border-main);
+      padding-bottom: 4px;
+    }
+    .narrative-block .block-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-gold);
+      min-height: 52px;
+    }
+
+    /* MÓDULO 5: HISTÓRICO & ÂNCORAS NARRATIVAS */
+    .anchors-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 16px;
+    }
+
+    .anchor-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .anchor-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .anchor-value {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid var(--border-main);
+      padding: 3px 6px;
+      min-height: 24px;
+    }
+
+    /* MÓDULO 6: EQUIPAMENTO & MANIFESTO DE CARGA */
+    .inventory-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      padding: 12px 14px;
+      margin-bottom: 20px;
+    }
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.2fr;
+      gap: 12px;
+    }
+    .inv-slot {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .inv-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .inv-content {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-main);
+      border-left: 2px solid var(--red-blood);
+      padding: 6px 8px;
+      min-height: 32px;
+    }
+
+    /* MÓDULO 7: DECLARAÇÃO LEGAL & ASSINATURA */
+    .validation-section {
+      border: 1px solid var(--border-main);
+      background: #0E0E0E;
+      padding: 14px 18px;
+      position: relative;
+    }
+
+    .declaration-legal-box {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      font-size: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .dec-checkbox {
+      width: 14px;
+      height: 14px;
+      background: var(--red-blood);
+      border: 1px solid var(--red-bright);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .signatures-row {
+      display: grid;
+      grid-template-columns: 1fr 180px 220px;
+      gap: 20px;
+      align-items: flex-end;
+      border-top: 1px solid var(--border-main);
+      padding-top: 12px;
+    }
+
+    .sig-field {
+      text-align: center;
+    }
+    .sig-handwritten {
+      font-family: 'Caveat', cursive;
+      font-size: 26px;
+      color: #E3DED3;
+      line-height: 1;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border-main);
+    }
+    .sig-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-main);
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border-main);
+    }
+    .sig-caption {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 8px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+    }
+
+    /* Carimbo militar estilizado */
+    .stamp-official {
+      border: 2px solid var(--red-blood);
+      background: rgba(120, 29, 36, 0.18);
+      padding: 6px 12px;
+      text-align: center;
+      transform: rotate(-3deg);
+      box-shadow: 0 0 10px rgba(120, 29, 36, 0.2);
+    }
+    .stamp-official .st-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: #FF5A65;
+      font-weight: 700;
+    }
+    .stamp-official .st-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      color: var(--text-gold);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- DOCUMENTO OFICIAL A4 -->
+  <div class="document-sheet">
+    
+    <!-- Marcadores de Mira nos Cantos -->
+    <div class="crosshair-tl">[ + ]</div>
+    <div class="crosshair-tr">[ + ]</div>
+    <div class="crosshair-bl">[ + ]</div>
+    <div class="crosshair-br">[ + ]</div>
+
+    <!-- Barra de Alerta Superior -->
+    <div class="top-security-bar">
+      <span>DEAD HOURS // REGISTRO DE SOBREVIVENTE // PROTOCOLO DE TRIAGEM 1.0</span>
+      <span>HORÁRIO OFICIAL: UTC−3 (BRASÍLIA)</span>
+      <span>ARQUIVO PERSISTENTE</span>
+    </div>
+
+    <!-- Cabeçalho Principal -->
+    <header class="sheet-header">
+      <div class="header-branding">
+        <div class="brand-logo-box">
+          <div class="dh-initials">DH</div>
+          <div class="dh-sub">SURV</div>
+        </div>
+        <div class="header-titles">
+          <h1>Registro de Sobrevivente</h1>
+          <div class="subtitle">Dossiê Técnico de Identificação e Aptidão de Campo</div>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div>REF: <strong>DH-REG-04</strong> // SERVIÇO ATIVO</div>
+        <div>POSTO DE TRIAGEM: <strong>SECTOR Z-01</strong></div>
+        <span class="tag-active">SOBREVIVENTE AVALIADO</span>
+      </div>
+    </header>
+
+    <!-- MÓDULO 1: IDENTIFICAÇÃO E FOTO TÁTICA -->
+    <div class="section-title">
+      <span class="title-text">1. Identificação do Indivíduo</span>
+      <span class="title-code">SEC-01 // REGISTRO CIVIL & CAMPO</span>
+    </div>
+
+    <div class="id-grid-container">
+      <div class="id-fields-box">
+        <div class="field-group full-width">
+          <div class="field-label">Nome do Sobrevivente (Identificador de Campo):</div>
+          <div class="field-value highlight-name">Carlos "Corvo" Silveira</div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Nome do Jogador:</div>
+          <div class="field-value">Marcos Roberto</div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Idade Cronológica:</div>
+          <div class="field-value">34 anos</div>
+        </div>
+        <div class="field-group full-width">
+          <div class="field-label">Ocupação Anterior ao Apocalipse:</div>
+          <div class="field-value">Mecânico Automotivo & Técnico Eletricista</div>
+        </div>
+      </div>
+
+      <!-- Caixa de Foto / Registro Facial Tático -->
+      <div class="photo-dossier-box">
+        <svg class="photo-silhouette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <div class="photo-label">REGISTRO FACIAL</div>
+        <div class="photo-label" style="font-size: 7px; color: #555;">ARQUIVO OFICIAL</div>
+        <div class="stamp-triagem">TRIAGEM OK</div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 2: ATRIBUTOS (INSPIRED BY ORDEM PARANORMAL HIERARCHY) -->
+    <div class="section-title">
+      <span class="title-text">2. Matriz de Atributos Principais (12 Pontos Distribuídos)</span>
+      <span class="title-code">SEC-02 // BIO-MÉTRICA DE APTIDÃO</span>
+    </div>
+
+    <div class="attributes-section">
+      <div class="attributes-row">
+        <!-- FORÇA -->
+        <div class="attribute-card">
+          <div class="attr-header highlight">FORÇA</div>
+          <div class="attr-value-box prime">3</div>
+          <div class="attr-footer-desc">Massa &amp; Combate</div>
+        </div>
+        <!-- AGILIDADE -->
+        <div class="attribute-card">
+          <div class="attr-header">AGILIDADE</div>
+          <div class="attr-value-box">2</div>
+          <div class="attr-footer-desc">Reflexo &amp; Furtivo</div>
+        </div>
+        <!-- VIGOR -->
+        <div class="attribute-card">
+          <div class="attr-header highlight">VIGOR</div>
+          <div class="attr-value-box prime">3</div>
+          <div class="attr-footer-desc">Saúde &amp; Imunidade</div>
+        </div>
+        <!-- INTELECTO -->
+        <div class="attribute-card">
+          <div class="attr-header">INTELECTO</div>
+          <div class="attr-value-box">2</div>
+          <div class="attr-footer-desc">Lógica &amp; Reparos</div>
+        </div>
+        <!-- PERCEPÇÃO -->
+        <div class="attribute-card">
+          <div class="attr-header">PERCEPÇÃO</div>
+          <div class="attr-value-box">1</div>
+          <div class="attr-footer-desc">Atenção &amp; Rastreio</div>
+        </div>
+        <!-- PRESENÇA -->
+        <div class="attribute-card">
+          <div class="attr-header">PRESENÇA</div>
+          <div class="attr-value-box">1</div>
+          <div class="attr-footer-desc">Moral &amp; Sangue Frio</div>
+        </div>
+      </div>
+
+      <!-- Faixa de Especializações (+2) -->
+      <div class="specs-strip">
+        <div class="strip-label">ESPECIALIZAÇÕES (+2):</div>
+        <div class="specs-pills-container">
+          <div class="spec-pill">
+            <span>Mecânica de Veículos e Motores</span>
+            <strong>+2 [INT]</strong>
+          </div>
+          <div class="spec-pill">
+            <span>Luta com Lâminas &amp; Machados</span>
+            <strong>+2 [FOR]</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 3: MONITORES VITAIS DE COMBATE -->
+    <div class="section-title">
+      <span class="title-text">3. Monitores Vitais &amp; Parâmetros Operacionais</span>
+      <span class="title-code">SEC-03 // STATUS DE COMBATE</span>
+    </div>
+
+    <div class="vital-monitors-grid">
+      <!-- VIDA -->
+      <div class="vital-card life-card">
+        <div class="vital-top">
+          <span>Pontos de Vida</span>
+          <span class="formula">10 + (VIG×2)</span>
+        </div>
+        <div class="vital-value-display">
+          16 <span class="unit">PV</span>
+        </div>
+        <div class="vital-tracker-dots">
+          <div class="vital-dot filled-red"></div>
+          <div class="vital-dot filled-red"></div>
+          <div class="vital-dot filled-red"></div>
+          <div class="vital-dot filled-red"></div>
+          <div class="vital-dot filled-red"></div>
+          <div class="vital-dot filled-red"></div>
+          <div class="vital-dot"></div>
+          <div class="vital-dot"></div>
+        </div>
+      </div>
+
+      <!-- FÔLEGO -->
+      <div class="vital-card stamina-card">
+        <div class="vital-top">
+          <span>Pontos de Fôlego</span>
+          <span class="formula">5 + VIG</span>
+        </div>
+        <div class="vital-value-display">
+          8 <span class="unit">PF</span>
+        </div>
+        <div class="vital-tracker-dots">
+          <div class="vital-dot filled-gold"></div>
+          <div class="vital-dot filled-gold"></div>
+          <div class="vital-dot filled-gold"></div>
+          <div class="vital-dot"></div>
+          <div class="vital-dot"></div>
+        </div>
+      </div>
+
+      <!-- DEFESA -->
+      <div class="vital-card defense-card">
+        <div class="vital-top">
+          <span>Defesa Passiva</span>
+          <span class="formula">10 + AGI</span>
+        </div>
+        <div class="vital-value-display">
+          12 <span class="unit">DEF</span>
+        </div>
+        <div class="vital-tracker-dots">
+          <div class="vital-dot" style="background: #385E8A;"></div>
+          <div class="vital-dot" style="background: #385E8A;"></div>
+          <div class="vital-dot"></div>
+        </div>
+      </div>
+
+      <!-- CARGA -->
+      <div class="vital-card cargo-card">
+        <div class="vital-top">
+          <span>Capacidade Carga</span>
+          <span class="formula">5 + FOR</span>
+        </div>
+        <div class="vital-value-display">
+          8 <span class="unit">SLOTS</span>
+        </div>
+        <div class="vital-tracker-dots">
+          <div class="vital-dot" style="background: #4D7358;"></div>
+          <div class="vital-dot" style="background: #4D7358;"></div>
+          <div class="vital-dot" style="background: #4D7358;"></div>
+          <div class="vital-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 4: PERFIL NARRATIVO (APARÊNCIA & PERSONALIDADE) -->
+    <div class="section-title">
+      <span class="title-text">4. Perfil Físico &amp; Psicológico</span>
+      <span class="title-code">SEC-04 // AVALIAÇÃO DESCRITIVA</span>
+    </div>
+
+    <div class="narrative-grid">
+      <div class="narrative-block">
+        <div class="block-label">Aparência Física &amp; Marcas Visíveis:</div>
+        <div class="block-text">
+          Cicatriz profunda no supercílio direito. Barba curta e desgrenhada, mãos grossas e calejadas com marcas de queimadura de solda. Veste jaqueta de couro surrada reforçada com fita silver tape nos punhos e cotovelos, coturnos industriais com biqueira de aço.
+        </div>
+      </div>
+      <div class="narrative-block">
+        <div class="block-label">Personalidade &amp; Comportamento sob Pressão:</div>
+        <div class="block-text">
+          Pragmático, silencioso e analítico. Sob estresse extremo foca em tarefas mecânicas ou imediatas para manter a calma. Não tolera desperdício de comida nem de munição. Desconfiado por natureza, mas leal até as últimas consequências a quem conquista seu respeito.
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 5: HISTÓRICO & ÂNCORAS NARRATIVAS -->
+    <div class="section-title">
+      <span class="title-text">5. Histórico &amp; Âncoras Psicológicas</span>
+      <span class="title-code">SEC-05 // MOTIVAÇÕES & TRAUMAS</span>
+    </div>
+
+    <div class="anchors-section">
+      <div class="anchor-item">
+        <div class="anchor-label">Objetivo Pessoal:</div>
+        <div class="anchor-value">Encontrar a filha de 8 anos supostamente evacuada para o comboio sul.</div>
+      </div>
+      <div class="anchor-item">
+        <div class="anchor-label">Maior Medo:</div>
+        <div class="anchor-value">Espaços confinados e escuros sem rotas secundárias de fuga.</div>
+      </div>
+      <div class="anchor-item">
+        <div class="anchor-label">Ligação com Sobrevivente:</div>
+        <div class="anchor-value">Salvou a médica Helena durante a queda da ponte rodoviária; confia nela.</div>
+      </div>
+      <div class="anchor-item">
+        <div class="anchor-label">Segredo ou Conflito:</div>
+        <div class="anchor-value">Trancou o portão da oficina com colegas feridos dentro durante o primeiro surto.</div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 6: EQUIPAMENTO & MANIFESTO DE CARGA -->
+    <div class="section-title">
+      <span class="title-text">6. Manifesto de Carga &amp; Equipamento Inicial</span>
+      <span class="title-code">SEC-06 // LOGÍSTICA DE SOBREVIVÊNCIA</span>
+    </div>
+
+    <div class="inventory-section">
+      <div class="inventory-grid">
+        <div class="inv-slot">
+          <div class="inv-label">Arma Principal:</div>
+          <div class="inv-content">Chave de Roda Pesada (1d6+3)</div>
+        </div>
+        <div class="inv-slot">
+          <div class="inv-label">Ferramenta de Campo:</div>
+          <div class="inv-content">Lanterna Tática c/ Dínamo Manual</div>
+        </div>
+        <div class="inv-slot">
+          <div class="inv-label">Outros Itens &amp; Mantimentos:</div>
+          <div class="inv-content">Cantil 1L militar, Ração seca (x2), Fita isolante</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 7: DECLARAÇÃO LEGAL & ASSINATURA -->
+    <div class="validation-section">
+      <div class="declaration-legal-box">
+        <div class="dec-checkbox">✓</div>
+        <div>
+          <strong style="color: var(--red-bright);">DECLARAÇÃO DE CIÊNCIA E REGRAS:</strong>
+          Confirmo que li e aceito as regras de sobrevivência, combate, infecção bacteriana e morte permanente (Permadeath) de DEAD HOURS. Estou ciente de que cada decisão no ermo é irrevogável e que a arbitragem dos mestres no WhatsApp é final e soberana.
+        </div>
+      </div>
+
+      <div class="signatures-row">
+        <div class="sig-field">
+          <div class="sig-handwritten">Carlos "Corvo" Silveira</div>
+          <div class="sig-caption">Assinatura Formal do Sobrevivente</div>
+        </div>
+        <div class="sig-field">
+          <div class="sig-date">18/11/2026</div>
+          <div class="sig-caption">Data de Registro Oficial</div>
+        </div>
+        <div class="stamp-official">
+          <div class="st-title">SOBREVIVENTE HOMOLOGADO</div>
+          <div class="st-sub">POSTO DE TRIAGEM // APTO AO ERMO</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
