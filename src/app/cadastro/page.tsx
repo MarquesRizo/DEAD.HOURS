@@ -191,7 +191,7 @@ export default function CadastroPage() {
             FICHA PREENCHÍVEL // PROCESSAMENTO 100% LOCAL
           </div>
           <p className="text-[#C3BBA9] leading-relaxed">
-            Preencha seus dados diretamente nos campos abaixo. Você pode baixar sua ficha personalizada em <strong>PNG</strong> ou <strong>PDF editável</strong> (baseados na arte de referência oficial), ou clicar em <strong>COPIAR FICHA</strong> para enviar o texto formatado no WhatsApp ou Discord da campanha. Nenhum dado é enviado a servidores externos.
+            Preencha seus dados diretamente nos campos abaixo. Você pode baixar sua ficha personalizada em <strong>PDF editável</strong> ou <strong>imagem PNG</strong> (ambos com a nova identidade visual oficial de DEAD HOURS), ou clicar em <strong>COPIAR FICHA</strong> para enviar o texto formatado no WhatsApp ou Discord da campanha. Nenhum dado é enviado a servidores externos.
           </p>
         </div>
       </div>
@@ -568,30 +568,11 @@ export default function CadastroPage() {
         </div>
 
         <p className="text-xs text-[#C3BBA9] font-body leading-relaxed">
-          Após preencher os dados, utilize uma das opções de exportação abaixo para gerar sua ficha em imagem de alta resolução (baseada na arte oficial do jogo), em documento PDF com campos editáveis, ou copiar o formato textual padrão para colar diretamente nos grupos de WhatsApp ou Discord.
+          Após preencher os dados, utilize uma das opções de exportação abaixo para gerar sua ficha em imagem de alta resolução (PNG com a nova identidade visual oficial de DEAD HOURS), em documento PDF vetorial com campos 100% editáveis, ou copiar o formato textual padrão para colar diretamente nos grupos de WhatsApp ou Discord.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-          {/* BOTÃO 1: BAIXAR PNG */}
-          <button
-            onClick={handleDownloadPNG}
-            disabled={isExportingPNG}
-            className="flex items-center justify-center gap-2 px-4 py-3.5 bg-[#0B0B0B] hover:bg-[#252525] text-[#E3DED3] border border-[#414141] hover:border-[#781D24] font-mono-tech text-xs tracking-wider uppercase transition-all shadow-md disabled:opacity-50"
-          >
-            {isExportingPNG ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin text-[#781D24]" />
-                GERANDO PNG...
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4 text-[#781D24]" />
-                BAIXAR PNG
-              </>
-            )}
-          </button>
-
-          {/* BOTÃO 2: BAIXAR PDF */}
+          {/* BOTÃO 1: BAIXAR PDF EDITÁVEL */}
           <button
             onClick={handleDownloadPDF}
             disabled={isExportingPDF}
@@ -605,7 +586,26 @@ export default function CadastroPage() {
             ) : (
               <>
                 <FileDown className="w-4 h-4 text-[#781D24]" />
-                BAIXAR PDF (EDITÁVEL)
+                BAIXAR PDF EDITÁVEL
+              </>
+            )}
+          </button>
+
+          {/* BOTÃO 2: BAIXAR COMO IMAGEM (PNG) */}
+          <button
+            onClick={handleDownloadPNG}
+            disabled={isExportingPNG}
+            className="flex items-center justify-center gap-2 px-4 py-3.5 bg-[#0B0B0B] hover:bg-[#252525] text-[#E3DED3] border border-[#414141] hover:border-[#781D24] font-mono-tech text-xs tracking-wider uppercase transition-all shadow-md disabled:opacity-50"
+          >
+            {isExportingPNG ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin text-[#781D24]" />
+                GERANDO PNG...
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4 text-[#781D24]" />
+                BAIXAR COMO IMAGEM (PNG)
               </>
             )}
           </button>
