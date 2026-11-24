@@ -11,6 +11,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8
   }));
 
+  const arquivoUrls = [
+    { url: `${baseUrl}/arquivos`, priority: 0.9, changeFrequency: 'weekly' as const },
+    { url: `${baseUrl}/arquivos/mundo-antes`, priority: 0.8, changeFrequency: 'monthly' as const },
+    { url: `${baseUrl}/arquivos/linha-do-tempo`, priority: 0.8, changeFrequency: 'monthly' as const },
+    { url: `${baseUrl}/arquivos/virus`, priority: 0.8, changeFrequency: 'monthly' as const },
+    { url: `${baseUrl}/arquivos/registros`, priority: 0.8, changeFrequency: 'monthly' as const },
+    { url: `${baseUrl}/arquivos/locais`, priority: 0.8, changeFrequency: 'monthly' as const },
+  ].map((item) => ({
+    ...item,
+    lastModified: new Date()
+  }));
+
   return [
     {
       url: baseUrl,
@@ -36,6 +48,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly' as const,
       priority: 0.7
     },
+    ...arquivoUrls,
     ...chapterUrls
   ];
 }

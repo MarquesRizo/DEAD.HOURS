@@ -3,15 +3,22 @@
  * Permite a consulta ao Manual e Arquivos do Mundo mesmo em conexões de 3G/4G instáveis em campo.
  */
 
-const CACHE_NAME = 'dead-hours-cache-v1';
+const CACHE_NAME = 'dead-hours-cache-v2';
 
 const STATIC_ASSETS = [
   '/',
   '/manual',
   '/cadastro',
   '/arquivos',
+  '/arquivos/mundo-antes',
+  '/arquivos/linha-do-tempo',
+  '/arquivos/virus',
+  '/arquivos/registros',
+  '/arquivos/locais',
   '/busca',
   '/icon.svg',
+  '/icon-192.png',
+  '/icon-512.png',
   '/manifest.json'
 ];
 
