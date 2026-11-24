@@ -30,7 +30,7 @@ export default function LivePreviewDossier({ data, className = '' }: LivePreview
   const vidaCalc = 10 + numVig * 2;
   const folegoCalc = 5 + numVig;
   const defesaCalc = 10 + numAgi;
-  const cargaCalc = 5 + numFor;
+  const cargaCalc = 10 + numFor * 2;
   const totalPontos = numFor + numAgi + numVig + numInt + numPer + numPres;
 
   const isComplete = Boolean(

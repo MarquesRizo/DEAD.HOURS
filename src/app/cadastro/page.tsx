@@ -258,7 +258,7 @@ export default function CadastroPage() {
   const vidaCalc = 10 + numVig * 2;
   const folegoCalc = 5 + numVig;
   const defesaCalc = 10 + numAgi;
-  const cargaCalc = 5 + numFor;
+  const cargaCalc = 10 + numFor * 2;
 
   // Total de pontos gastos nos atributos
   const totalPontos = numFor + numAgi + numVig + numInt + numPer + numPres;
@@ -702,7 +702,7 @@ export default function CadastroPage() {
                   <div>
                     <span className="text-[#77736C] block text-[10px]">CAPACIDADE DE CARGA:</span>
                     <strong className="text-[#E3DED3] font-bold text-sm">{cargaCalc} slots</strong>
-                    <span className="text-[9px] text-[#555555] block">5 + FOR</span>
+                    <span className="text-[9px] text-[#555555] block">10 + (2 × FOR)</span>
                   </div>
                 </div>
 

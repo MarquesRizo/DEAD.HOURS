@@ -206,7 +206,7 @@ export const CHAPTERS: Chapter[] = [
             ['Pontos de Vida (PV)', '10 + (Vigor × 2)', 'Limiar físico antes da incapacidade e risco iminente de morte'],
             ['Pontos de Fôlego (PF)', '5 + Vigor', 'Energia para arrancadas, corrida de fuga e manobras extremas'],
             ['Defesa Passiva', '10 + Agilidade', 'Dificuldade base para inimigos acertarem ataques corporais'],
-            ['Capacidade de Carga', '5 + Força (em slots)', 'Volume máximo de itens e mantimentos que podem ser transportados'],
+            ['Capacidade de Carga', '10 + (2 × Força) em slots', 'Volume máximo de itens e mantimentos que podem ser transportados'],
             ['Estresse Máximo', 'Teto Fixo de 10 Pontos', 'Medidor de sanidade e pressão; colapsos ocorrem ao atingir 10']
           ]
         }

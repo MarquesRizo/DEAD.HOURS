@@ -39,40 +39,43 @@ export interface FichaData {
 }
 
 /**
- * Constantes e paleta de cores compartilhada oficial de DEAD HOURS.
- * Compartilhada rigorosamente entre as renderizações de PDF vetorial e Imagem PNG.
+ * Constantes e paleta de materiais oficiais do Prontuário Histórico de DEAD HOURS.
+ * Compartilhada rigorosamente entre a renderização de PDF vetorial A4 e Imagem PNG em alta resolução.
  */
 export const FICHA_CONFIG = {
   refWidth: 1000,
   refHeight: 1414,
   pdfWidth: 595.28,
   pdfHeight: 841.89,
-  pngScale: 1.5, // Gera PNG em alta resolução (1500x2121 px) perfeito para compartilhamento
+  pngScale: 1.5, // Gera PNG em alta resolução (1500x2121 px), nítido para impressão e compartilhamento
   colors: {
-    bg: '#090909',
-    card: '#131313',
-    cardHeader: '#1A1A1A',
-    cardAlt: '#101010',
-    input: '#0C0C0C',
-    border: '#333333',
-    borderLight: '#414141',
-    borderRed: '#781D24',
-    redBright: '#AA2830',
-    redDark: '#4B1117',
-    textWhite: '#E3DED3',
-    textPure: '#FFFFFF',
-    textMuted: '#77736C',
-    textGold: '#C3BBA9',
-    life: '#781D24',
-    stamina: '#8C6D23',
-    defense: '#2C4A6F',
-    cargo: '#3F5E46',
+    // Papel envelhecido e material de arquivo
+    paperBase: '#EAE1CB',        // Papel de arquivo amarelado autêntico
+    paperDark: '#DECFA9',        // Bordas e desgaste de envelhecimento
+    paperVignette: '#B6A07A',    // Desgaste perimetral de manuseio
+    paperCrease: '#D4C49F',      // Marca de dobra central de arquivo
+    paperLine: '#C2B494',        // Pautas e linhas-guia
+    photoPaper: '#FAF7EF',       // Borda física de papel fotográfico
+    
+    // Tintas documentais de impressão antiga
+    inkPrimary: '#161412',       // Fita datilográfica preta carvão principal
+    inkSecondary: '#302B24',     // Impressão institucional preexistente
+    inkMuted: '#6E6352',         // Rótulos e pautas finas
+    inkFaint: '#A49781',         // Linhas pontilhadas e marcações de preenchimento
+    
+    // Tinta de carimbo oficial desgastado
+    stampRed: '#872320',         // Carimbo vermelho desbotado (óxido / sangue seco)
+    stampRedDark: '#5E1816',     // Contorno e sombras do carimbo
+    
+    // Elementos físicos
+    paperClip: '#7A756C',        // Clipe metálico de fixação
+    cornerBracket: '#2B2620',    // Cantoneiras triangulares de álbum da foto
   }
 };
 
 /**
  * Gera nomes de arquivo padronizados para download:
- * dead-hours-ficha-[nome-do-sobrevivente].pdf | .png
+ * dead-hours-dossie-[nome-do-sobrevivente].pdf | .png
  */
 export function getExportFileName(nomePersonagem: string, extension: 'pdf' | 'png'): string {
   const cleanName = (nomePersonagem || '')
@@ -83,12 +86,12 @@ export function getExportFileName(nomePersonagem: string, extension: 'pdf' | 'pn
     .replace(/[^a-z0-9_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-  return cleanName ? `dead-hours-ficha-${cleanName}.${extension}` : `dead-hours-ficha-sobrevivente.${extension}`;
+  return cleanName ? `dead-hours-dossie-${cleanName}.${extension}` : `dead-hours-dossie-sobrevivente.${extension}`;
 }
 
 /**
- * Sanitiza e mapeia caracteres para garantir compatibilidade 100% com WinAnsi (StandardFonts do PDF)
- * sem descartar silenciosamente informações do jogador e evitando exceções durante o save().
+ * Sanitiza e mapeia caracteres para compatibilidade total com WinAnsi (StandardFonts do PDF)
+ * sem descartar informações do jogador e evitando falhas durante doc.save().
  */
 export function sanitizeForWinAnsi(text: string, font: PDFFont): string {
   if (!text) return '';
@@ -104,8 +107,17 @@ export function sanitizeForWinAnsi(text: string, font: PDFFont): string {
     '✗': '[ ]',
     '✘': '[ ]',
     '…': '...',
-    '•': '•',
-    '·': '·',
+    '•': '*',
+    '·': '-',
+    '—': '-',
+    '–': '-',
+    '“': '"',
+    '”': '"',
+    '‘': "'",
+    '’': "'",
+    '×': 'x',
+    '★': '*',
+    '☆': '*',
     '💀': '[morte]',
     '🧟': '[infectado]',
     '🔪': '[faca]',
@@ -138,8 +150,8 @@ export function sanitizeForWinAnsi(text: string, font: PDFFont): string {
 }
 
 /**
- * Cria e compila a ficha completa de DEAD HOURS em formato PDF A4 vetorial do zero,
- * com identidade visual oficial (inspirada no modelo Ordem Paranormal com temática pós-apocalíptica),
+ * Cria e compila o Prontuário de Sobrevivente em formato PDF A4 vetorial do zero,
+ * com identidade visual autêntica de documento histórico físico recuperado,
  * formulários AcroForm 100% transparentes e interativos, fontes embutidas e suporte a acentos.
  */
 export async function generateFichaPDF(data: FichaData): Promise<Uint8Array> {
@@ -152,26 +164,23 @@ export async function generateFichaPDF(data: FichaData): Promise<Uint8Array> {
   const sy = (h: number) => (h / REF_H) * PAGE_HEIGHT;
   const py = (y: number) => PAGE_HEIGHT - (y / REF_H) * PAGE_HEIGHT;
 
-  // Paleta Oficial em formato PDF rgb()
-  const cBg = rgb(9 / 255, 9 / 255, 9 / 255);
-  const cCard = rgb(19 / 255, 19 / 255, 19 / 255);
-  const cCardHeader = rgb(26 / 255, 26 / 255, 26 / 255);
-  const cCardAlt = rgb(14 / 255, 14 / 255, 14 / 255);
-  const cInput = rgb(12 / 255, 12 / 255, 12 / 255);
-  const cBorder = rgb(51 / 255, 51 / 255, 51 / 255);
-  const cBorderLight = rgb(65 / 255, 65 / 255, 65 / 255);
-  const cBorderRed = rgb(120 / 255, 29 / 255, 36 / 255);
-  const cRedBright = rgb(170 / 255, 40 / 255, 48 / 255);
-  const cRedDark = rgb(75 / 255, 17 / 255, 23 / 255);
-  const cTextWhite = rgb(227 / 255, 222 / 255, 211 / 255);
-  const cTextPure = rgb(1, 1, 1);
-  const cTextMuted = rgb(119 / 255, 115 / 255, 108 / 255);
-  const cTextGold = rgb(195 / 255, 187 / 255, 169 / 255);
+  // Paleta PDF rgb() estritamente histórica e documental
+  const cPaperBase = rgb(234 / 255, 225 / 255, 203 / 255);
+  const cPaperDark = rgb(222 / 255, 207 / 255, 169 / 255);
+  const cPaperVignette = rgb(182 / 255, 160 / 255, 122 / 255);
+  const cPaperLine = rgb(194 / 255, 180 / 255, 148 / 255);
+  const cPhotoPaper = rgb(250 / 255, 247 / 255, 239 / 255);
 
-  const cLife = rgb(120 / 255, 29 / 255, 36 / 255);
-  const cStamina = rgb(140 / 255, 109 / 255, 35 / 255);
-  const cDefense = rgb(44 / 255, 74 / 255, 111 / 255);
-  const cCargo = rgb(63 / 255, 94 / 255, 70 / 255);
+  const cInkPrimary = rgb(22 / 255, 20 / 255, 18 / 255);
+  const cInkSecondary = rgb(48 / 255, 43 / 255, 36 / 255);
+  const cInkMuted = rgb(110 / 255, 99 / 255, 82 / 255);
+  const cInkFaint = rgb(164 / 255, 151 / 255, 129 / 255);
+
+  const cStampRed = rgb(135 / 255, 35 / 255, 32 / 255);
+  const cStampRedDark = rgb(94 / 255, 24 / 255, 22 / 255);
+
+  const cPaperClip = rgb(122 / 255, 117 / 255, 108 / 255);
+  const cCornerBracket = rgb(43 / 255, 38 / 255, 32 / 255);
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
@@ -271,9 +280,9 @@ export async function generateFichaPDF(data: FichaData): Promise<Uint8Array> {
     } = {}
   ) => {
     const field = form.createTextField(name);
-    const fSize = opts.fontSize ? sx(opts.fontSize) : 8.5;
+    const fSize = opts.fontSize ? sx(opts.fontSize) : 9;
     const fFont = opts.font || fontCourierBold;
-    const fColor = opts.textColor || cTextWhite;
+    const fColor = opts.textColor || cInkPrimary;
 
     field.addToPage(page, {
       x: sx(x),
@@ -299,104 +308,128 @@ export async function generateFichaPDF(data: FichaData): Promise<Uint8Array> {
     return field;
   };
 
-  // 1. Fundo Oficial
-  drawBox(0, 0, 1000, 1414, { color: cBg });
+  // ==================== 1. PAPEL ENVELHECIDO & MATERIALIDADE ====================
+  // Base do papel antigo
+  drawBox(0, 0, 1000, 1414, { color: cPaperBase });
 
-  // 2. Grade tática de precisão
-  const cGrid = rgb(15 / 255, 15 / 255, 15 / 255);
-  for (let x = 0; x < 1000; x += 36) {
-    drawLineSeg(x, 0, x, 1414, cGrid, 0.5);
-  }
-  for (let y = 0; y < 1414; y += 36) {
-    drawLineSeg(0, y, 1000, y, cGrid, 0.5);
-  }
+  // Desgaste perimetral de borda e oxidação do papel
+  drawBox(0, 0, 1000, 16, { color: cPaperDark });
+  drawBox(0, 1398, 1000, 16, { color: cPaperDark });
+  drawBox(0, 0, 16, 1414, { color: cPaperDark });
+  drawBox(984, 0, 16, 1414, { color: cPaperDark });
 
-  // 3. Molduras e miras táticas de canto
-  drawBox(14, 14, 972, 1386, { borderColor: cBorder, borderWidth: 1.5 });
-  drawBox(18, 18, 964, 1378, { borderColor: rgb(75 / 255, 17 / 255, 23 / 255), borderWidth: 0.8 });
+  // Manchas de tempo e oxidação orgânica nos cantos
+  drawBox(20, 20, 140, 50, { color: cPaperDark });
+  drawBox(840, 1350, 140, 48, { color: cPaperDark });
+  drawBox(880, 580, 90, 70, { color: cPaperDark });
 
-  drawTextAt("[ + ]", 22, 29, 8, fontCourierBold, cBorderRed);
-  drawTextAt("[ + ]", 955, 29, 8, fontCourierBold, cBorderRed);
-  drawTextAt("[ + ]", 22, 1400, 8, fontCourierBold, cBorderRed);
-  drawTextAt("[ + ]", 955, 1400, 8, fontCourierBold, cBorderRed);
+  // Marca de dobra horizontal de arquivamento (crease na metade da folha: y = 707)
+  drawLineSeg(24, 707, 976, 707, rgb(245 / 255, 238 / 255, 222 / 255), 0.8);
+  drawLineSeg(24, 708, 976, 708, cPaperLine, 0.6);
 
-  // 4. Barra Superior de Segurança
-  drawBox(28, 24, 944, 20, { color: cRedDark, borderColor: cBorderRed, borderWidth: 1 });
-  drawTextAt("DEAD HOURS // REGISTRO DE SOBREVIVENTE // PROTOCOLO DE TRIAGEM 1.0", 38, 38, 7.5, fontCourierBold, cTextPure);
-  drawTextAt("UTC-3 (BRASILIA)", 750, 38, 7.5, fontCourier, cTextGold);
-  drawTextAt("CAMPO ATIVO", 885, 38, 7.5, fontCourierBold, cRedBright);
+  // Moldura institucional com traço tipográfico clássico (hairline duplo)
+  drawBox(32, 26, 936, 1362, { borderColor: cInkSecondary, borderWidth: 1.2 });
+  drawBox(36, 30, 928, 1354, { borderColor: cInkFaint, borderWidth: 0.5 });
 
-  // 5. Cabeçalho Principal do Dossiê
-  drawBox(28, 52, 54, 54, { color: cCard, borderColor: cBorderRed, borderWidth: 2 });
-  drawTextAt("DH", 34, 82, 18, fontHelveticaBold, cTextPure);
-  drawTextAt("SURV", 37, 98, 7.5, fontCourierBold, cRedBright);
+  // Miras e cruzetas de registro nos 4 cantos
+  drawTextAt("+", 38, 38, 7.5, fontCourier, cInkMuted);
+  drawTextAt("+", 956, 38, 7.5, fontCourier, cInkMuted);
+  drawTextAt("+", 38, 1378, 7.5, fontCourier, cInkMuted);
+  drawTextAt("+", 956, 1378, 7.5, fontCourier, cInkMuted);
 
-  drawTextAt("REGISTRO DE SOBREVIVENTE", 92, 74, 20, fontHelveticaBold, cTextPure);
-  drawTextAt("DOSSIE TECNICO DE IDENTIFICACAO E APTIDAO DE CAMPO", 95, 94, 8.5, fontCourier, cTextGold);
+  // ==================== 2. CABEÇALHO DO PRONTUÁRIO (MASTHEAD) ====================
+  // Tarja superior institucional
+  drawTextAt("PRONTUARIO DE SOBREVIVENTE // ARQUIVO HISTORICO RECUPERADO", 44, 46, 7.5, fontCourierBold, cInkMuted);
+  drawTextAt("FORMULARIO N* 104-DH", 845, 46, 7.5, fontCourierBold, cInkMuted);
 
-  drawTextAt("REF: DH-REG-04 // SERVICO ATIVO", 725, 66, 8, fontCourier, cTextMuted);
-  drawTextAt("POSTO DE TRIAGEM: SECTOR Z-01", 725, 78, 8, fontCourier, cTextMuted);
-  drawBox(725, 84, 180, 18, { color: cBorderRed, borderColor: cRedBright, borderWidth: 1 });
-  drawTextAt("SOBREVIVENTE AVALIADO", 725, 96.5, 8.5, fontCourierBold, cTextPure, { alignCenter: true, boxW: 180 });
+  drawLineSeg(44, 52, 956, 52, cInkSecondary, 1);
+  drawLineSeg(44, 54, 956, 54, cInkFaint, 0.4);
 
-  drawLineSeg(28, 118, 972, 118, cBorderRed, 2);
+  // Título em Prensa Tipográfica Histórica
+  drawTextAt("DEAD HOURS", 44, 82, 24, fontHelveticaBold, cInkPrimary);
+  drawTextAt("PRONTUARIO DE IDENTIFICACAO DE SOBREVIVENTE", 46, 98, 10, fontHelveticaBold, cInkSecondary);
+  drawTextAt("DOCUMENTACAO DE REGISTRO INDIVIDUAL // EDICAO DE CAMPO", 46, 110, 7.5, fontCourier, cInkMuted);
 
-  const drawSectionHeader = (y: number, num: string, title: string, code: string) => {
-    drawBox(28, y, 944, 24, { color: cCardHeader, borderColor: cBorder, borderWidth: 1 });
-    drawBox(28, y, 5, 24, { color: cBorderRed });
-    drawBox(38, y + 3, 22, 18, { color: cRedDark, borderColor: cBorderRed, borderWidth: 1 });
-    drawTextAt(num, 38, y + 16, 8.5, fontCourierBold, cTextPure, { alignCenter: true, boxW: 22 });
-    drawTextAt(title, 68, y + 17, 10.5, fontHelveticaBold, cTextPure);
-    drawTextAt(code, 735, y + 16, 8, fontCourier, cTextMuted);
+  // Carimbo histórico "ARQUIVO RECUPERADO" no canto superior direito
+  const stampAngleHeader = degrees(-4);
+  drawBox(780, 64, 160, 32, { borderColor: cStampRed, borderWidth: 1.4, rotate: stampAngleHeader });
+  drawBox(783, 67, 154, 26, { borderColor: cStampRed, borderWidth: 0.5, rotate: stampAngleHeader });
+  drawTextAt("DEAD HOURS", 780, 78, 7, fontCourierBold, cStampRed, { alignCenter: true, boxW: 160, rotate: stampAngleHeader });
+  drawTextAt("[ ARQUIVO RECUPERADO ]", 780, 90, 8.5, fontHelveticaBold, cStampRedDark, { alignCenter: true, boxW: 160, rotate: stampAngleHeader });
+
+  drawLineSeg(44, 122, 956, 122, cInkSecondary, 1);
+  drawLineSeg(44, 124, 956, 124, cInkFaint, 0.4);
+
+  // Helper Oficial para Linhas de Seção Histórica (sem caixas pretas de interface)
+  const drawSectionTitle = (y: number, numStr: string, titleStr: string) => {
+    drawLineSeg(44, y, 956, y, cInkSecondary, 0.8);
+    drawTextAt(numStr, 44, y + 13, 8.5, fontHelveticaBold, cStampRed);
+    drawTextAt(titleStr, 68, y + 13, 8.5, fontHelveticaBold, cInkPrimary);
+    drawLineSeg(44, y + 17, 956, y + 17, cPaperLine, 0.5);
   };
 
-  // ==================== 1. IDENTIFICAÇÃO ====================
-  drawSectionHeader(130, "01", "IDENTIFICACAO DO INDIVIDUO", "SEC-01 // REGISTRO CIVIL & CAMPO");
+  // ==================== SEÇÃO 1: IDENTIFICAÇÃO PESSOAL & FOTOGRAFIA ANEXADA ====================
+  drawSectionTitle(130, "I.", "IDENTIFICACAO PESSOAL E REGISTRO CIVIL");
 
-  drawBox(28, 160, 740, 108, { color: cCard, borderColor: cBorder, borderWidth: 1 });
-
-  drawTextAt("NOME DO SOBREVIVENTE (IDENTIFICADOR DE CAMPO):", 38, 174, 7.5, fontCourier, cTextMuted);
-  drawBox(38, 180, 720, 26, { color: rgb(28 / 255, 12 / 255, 14 / 255), borderColor: cBorderRed, borderWidth: 1 });
-  addField('nome_personagem', data.nomePersonagem, 44, 182, 708, 22, {
+  // Dados Pessoais (à esquerda)
+  // Nome do Sobrevivente
+  drawTextAt("NOME DO SOBREVIVENTE:", 44, 160, 8, fontCourierBold, cInkMuted);
+  drawLineSeg(44, 184, 710, 184, cInkSecondary, 1);
+  addField('nome_personagem', data.nomePersonagem, 46, 162, 660, 22, {
     font: fontHelveticaBold,
     fontSize: 13,
-    textColor: cTextPure
+    textColor: cInkPrimary
   });
 
-  drawTextAt("NOME DO JOGADOR:", 38, 220, 7.5, fontCourier, cTextMuted);
-  drawBox(38, 224, 345, 22, { color: cInput, borderColor: cBorder, borderWidth: 1 });
-  addField('nome_jogador', data.nomeJogador, 42, 226, 337, 18, {
-    font: fontHelveticaBold,
-    fontSize: 9,
-    textColor: cTextWhite
+  // Nome do Jogador e Idade
+  drawTextAt("NOME DO JOGADOR:", 44, 206, 8, fontCourierBold, cInkMuted);
+  drawLineSeg(44, 230, 520, 230, cInkSecondary, 0.8);
+  addField('nome_jogador', data.nomeJogador, 46, 210, 470, 20, {
+    font: fontCourierBold,
+    fontSize: 9.5,
+    textColor: cInkPrimary
   });
 
-  drawTextAt("IDADE CRONOLOGICA:", 400, 220, 7.5, fontCourier, cTextMuted);
-  drawBox(400, 224, 120, 22, { color: cInput, borderColor: cBorder, borderWidth: 1 });
-  addField('idade', data.idade, 404, 226, 112, 18, {
-    font: fontHelveticaBold,
-    fontSize: 9,
-    textColor: cTextWhite
+  drawTextAt("IDADE:", 540, 206, 8, fontCourierBold, cInkMuted);
+  drawLineSeg(540, 230, 710, 230, cInkSecondary, 0.8);
+  addField('idade', data.idade, 544, 210, 160, 20, {
+    font: fontCourierBold,
+    fontSize: 9.5,
+    textColor: cInkPrimary,
+    alignCenter: true
   });
 
-  drawTextAt("OCUPACAO ANTERIOR:", 535, 220, 7.5, fontCourier, cTextMuted);
-  drawBox(535, 224, 223, 22, { color: cInput, borderColor: cBorder, borderWidth: 1 });
-  addField('ocupacao', data.ocupacao, 539, 226, 215, 18, {
-    font: fontHelveticaBold,
-    fontSize: 9,
-    textColor: cTextWhite
+  // Ocupação Anterior
+  drawTextAt("OCUPACAO ANTERIOR AO COLAPSO:", 44, 252, 8, fontCourierBold, cInkMuted);
+  drawLineSeg(44, 276, 710, 276, cInkSecondary, 0.8);
+  addField('ocupacao', data.ocupacao, 46, 256, 660, 20, {
+    font: fontCourierBold,
+    fontSize: 9.5,
+    textColor: cInkPrimary
   });
 
-  // Photo Box (Identificação Fotográfica do Sobrevivente)
-  drawBox(780, 160, 192, 108, { color: cCard, borderColor: cBorder, borderWidth: 1 });
+  // Fotografia Física Anexada (à direita)
+  const photoFrameX = 735;
+  const photoFrameY = 136;
+  const photoFrameW = 221;
+  const photoFrameH = 146;
+
+  // Passepartout de papel fotográfico com leve relevo físico
+  drawBox(photoFrameX, photoFrameY, photoFrameW, photoFrameH, { color: cPhotoPaper, borderColor: cInkSecondary, borderWidth: 0.8 });
+  drawBox(photoFrameX + 1, photoFrameY + 1, photoFrameW - 2, photoFrameH - 2, { borderColor: cPaperLine, borderWidth: 0.5 });
+
+  const photoInnerX = photoFrameX + 8;
+  const photoInnerY = photoFrameY + 8;
+  const photoInnerW = photoFrameW - 16; // 205 px
+  const photoInnerH = Math.round(photoInnerW / 1.83); // ~112 px (proporção idêntica ao PhotoUploader)
 
   let photoEmbedded = false;
   if (data.foto) {
     try {
       const isPng = data.foto.startsWith('data:image/png');
       const base64Clean = data.foto.replace(/^data:image\/\w+;base64,/, '');
-      const binaryStr = typeof atob !== 'undefined' 
-        ? atob(base64Clean) 
+      const binaryStr = typeof atob !== 'undefined'
+        ? atob(base64Clean)
         : Buffer.from(base64Clean, 'base64').toString('binary');
       const bytes = new Uint8Array(binaryStr.length);
       for (let i = 0; i < binaryStr.length; i++) {
@@ -408,15 +441,12 @@ export async function generateFichaPDF(data: FichaData): Promise<Uint8Array> {
         : await pdfDoc.embedJpg(bytes);
 
       page.drawImage(embeddedImg, {
-        x: sx(792),
-        y: py(168 + 92),
-        width: sx(168),
-        height: sy(92),
+        x: sx(photoInnerX),
+        y: py(photoInnerY + photoInnerH),
+        width: sx(photoInnerW),
+        height: sy(photoInnerH),
       });
 
-      drawBox(792, 168, 168, 92, { borderColor: cBorderRed, borderWidth: 1.2 });
-      drawBox(808, 246, 136, 12, { color: rgb(20 / 255, 10 / 255, 12 / 255), borderColor: cBorderRed, borderWidth: 0.5 });
-      drawTextAt("[ REGISTRO BIOMETRICO ]", 808, 254.5, 6, fontCourierBold, cRedBright, { alignCenter: true, boxW: 136 });
       photoEmbedded = true;
     } catch (err) {
       console.warn("Falha ao incorporar fotografia no PDF:", err);
@@ -424,100 +454,161 @@ export async function generateFichaPDF(data: FichaData): Promise<Uint8Array> {
   }
 
   if (!photoEmbedded) {
-    drawBox(792, 168, 168, 92, { borderColor: cBorderLight, borderWidth: 0.8 });
-    drawTextAt("[ REGISTRO FACIAL ]", 792, 202, 7.5, fontCourier, cTextMuted, { alignCenter: true, boxW: 168 });
-    drawTextAt("ARQUIVO DE CAMPO", 792, 214, 6.5, fontCourier, cTextMuted, { alignCenter: true, boxW: 168 });
-    drawBox(812, 232, 130, 18, { color: cBorderRed, borderColor: cRedBright, borderWidth: 1 });
-    drawTextAt("TRIAGEM OK", 812, 244, 8, fontCourierBold, cTextPure, { alignCenter: true, boxW: 130 });
+    // Espaço em branco no papel para fotografia física
+    drawBox(photoInnerX, photoInnerY, photoInnerW, photoInnerH, { color: cPaperBase, borderColor: cInkFaint, borderWidth: 0.8 });
+    drawLineSeg(photoInnerX + 8, photoInnerY + 8, photoInnerX + photoInnerW - 8, photoInnerY + photoInnerH - 8, cPaperLine, 0.4);
+    drawLineSeg(photoInnerX + 8, photoInnerY + photoInnerH - 8, photoInnerX + photoInnerW - 8, photoInnerY + 8, cPaperLine, 0.4);
+
+    drawTextAt("[ FOTOGRAFIA NAO ANEXADA ]", photoInnerX, photoInnerY + 54, 7.5, fontCourierBold, cInkMuted, {
+      alignCenter: true,
+      boxW: photoInnerW
+    });
+    drawTextAt("Registro visual pendente", photoInnerX, photoInnerY + 68, 6.5, fontCourier, cInkFaint, {
+      alignCenter: true,
+      boxW: photoInnerW
+    });
   }
 
-  // ==================== 2. ATRIBUTOS ====================
-  drawSectionHeader(280, "02", "MATRIZ DE ATRIBUTOS PRINCIPAIS (12 PONTOS DISTRIBUIDOS)", "SEC-02 // BIO-METRICA OPERACIONAL");
+  // Cantoneiras triangulares de fixação da foto física nos 4 cantos
+  const drawCornerMount = (cx: number, cy: number, type: 'TL' | 'TR' | 'BL' | 'BR') => {
+    const s = 11;
+    if (type === 'TL') {
+      drawBox(cx, cy, s, 3, { color: cCornerBracket });
+      drawBox(cx, cy, 3, s, { color: cCornerBracket });
+    } else if (type === 'TR') {
+      drawBox(cx - s, cy, s, 3, { color: cCornerBracket });
+      drawBox(cx - 3, cy, 3, s, { color: cCornerBracket });
+    } else if (type === 'BL') {
+      drawBox(cx, cy - 3, s, 3, { color: cCornerBracket });
+      drawBox(cx, cy - s, 3, s, { color: cCornerBracket });
+    } else if (type === 'BR') {
+      drawBox(cx - s, cy - 3, s, 3, { color: cCornerBracket });
+      drawBox(cx - 3, cy - s, 3, s, { color: cCornerBracket });
+    }
+  };
+  drawCornerMount(photoInnerX, photoInnerY, 'TL');
+  drawCornerMount(photoInnerX + photoInnerW, photoInnerY, 'TR');
+  drawCornerMount(photoInnerX, photoInnerY + photoInnerH, 'BL');
+  drawCornerMount(photoInnerX + photoInnerW, photoInnerY + photoInnerH, 'BR');
+
+  // Clipe metálico de fixação segurando a foto ao documento
+  drawLineSeg(photoInnerX + 16, photoFrameY - 6, photoInnerX + 16, photoFrameY + 18, cPaperClip, 1.5);
+  drawLineSeg(photoInnerX + 22, photoFrameY - 6, photoInnerX + 22, photoFrameY + 22, cPaperClip, 1.5);
+  drawLineSeg(photoInnerX + 16, photoFrameY - 6, photoInnerX + 22, photoFrameY - 6, cPaperClip, 1.5);
+
+  // Carimbo de autenticação sobrepondo a borda da fotografia
+  const stampAnglePhoto = degrees(-5);
+  drawBox(photoFrameX + photoFrameW - 95, photoFrameY + photoFrameH - 24, 98, 22, {
+    borderColor: cStampRed,
+    borderWidth: 1.2,
+    rotate: stampAnglePhoto
+  });
+  drawTextAt("DEAD HOURS", photoFrameX + photoFrameW - 95, photoFrameY + photoFrameH - 14, 6.5, fontCourierBold, cStampRed, {
+    alignCenter: true,
+    boxW: 98,
+    rotate: stampAnglePhoto
+  });
+  drawTextAt("IDENTIFICACAO", photoFrameX + photoFrameW - 95, photoFrameY + photoFrameH - 6, 6, fontCourier, cStampRed, {
+    alignCenter: true,
+    boxW: 98,
+    rotate: stampAnglePhoto
+  });
+
+  // Legenda datilografada da fotografia
+  drawTextAt("FOTOGRAFIA ANEXADA", photoFrameX, photoFrameY + photoFrameH - 4, 6.5, fontCourier, cInkMuted, {
+    alignCenter: true,
+    boxW: photoFrameW
+  });
+
+  // ==================== SEÇÃO 2: MATRIZ DE ATRIBUTOS E ESPECIALIZAÇÕES ====================
+  drawSectionTitle(296, "II.", "MATRIZ DE ATRIBUTOS DE APTIDAO (12 PONTOS DISTRIBUIDOS)");
 
   const attrs = [
-    { key: 'forca', field: 'attr_forca', name: 'FORCA', tag: '[FOR]', desc: 'Massa & Combate', val: data.forca },
-    { key: 'agilidade', field: 'attr_agilidade', name: 'AGILIDADE', tag: '[AGI]', desc: 'Reflexo & Furtivo', val: data.agilidade },
-    { key: 'vigor', field: 'attr_vigor', name: 'VIGOR', tag: '[VIG]', desc: 'Saude & Imunidade', val: data.vigor },
-    { key: 'intelecto', field: 'attr_intelecto', name: 'INTELECTO', tag: '[INT]', desc: 'Logica & Reparos', val: data.intelecto },
-    { key: 'percepcao', field: 'attr_percepcao', name: 'PERCEPCAO', tag: '[PER]', desc: 'Atencao & Rastreio', val: data.percepcao },
-    { key: 'presenca', field: 'attr_presenca', name: 'PRESENCA', tag: '[PRE]', desc: 'Moral & Sangue Frio', val: data.presenca }
+    { key: 'forca', field: 'attr_forca', name: 'FORCA', tag: 'FOR', desc: 'Massa & Combate', val: data.forca },
+    { key: 'agilidade', field: 'attr_agilidade', name: 'AGILIDADE', tag: 'AGI', desc: 'Reflexo & Esquiva', val: data.agilidade },
+    { key: 'vigor', field: 'attr_vigor', name: 'VIGOR', tag: 'VIG', desc: 'Saude & Imunidade', val: data.vigor },
+    { key: 'intelecto', field: 'attr_intelecto', name: 'INTELECTO', tag: 'INT', desc: 'Logica & Reparo', val: data.intelecto },
+    { key: 'percepcao', field: 'attr_percepcao', name: 'PERCEPCAO', tag: 'PER', desc: 'Atencao & Rastreio', val: data.percepcao },
+    { key: 'presenca', field: 'attr_presenca', name: 'PRESENCA', tag: 'PRE', desc: 'Moral & Sangue Frio', val: data.presenca }
   ];
 
-  const attrWidth = 150;
-  const attrGap = 8.8;
-  const startX = 28;
+  const attrTableX = 44;
+  const attrTableY = 320;
+  const attrTableW = 912;
+  const attrColW = attrTableW / 6; // 152 px cada
+  const attrTableH = 92;
+
+  // Grade tabular da matriz de atributos
+  drawBox(attrTableX, attrTableY, attrTableW, attrTableH, { borderColor: cInkSecondary, borderWidth: 1 });
 
   attrs.forEach((a, i) => {
-    const x = startX + i * (attrWidth + attrGap);
+    const cx = attrTableX + i * attrColW;
     const numVal = parseInt(a.val) || 0;
-    const isHigh = numVal >= 3;
 
-    drawBox(x, 310, attrWidth, 120, {
-      color: cCard,
-      borderColor: isHigh ? cBorderRed : cBorder,
-      borderWidth: 1
-    });
-
-    const headerBg = isHigh ? rgb(36 / 255, 20 / 255, 22 / 255) : cCardHeader;
-    drawBox(x, 310, attrWidth, 22, { color: headerBg, borderColor: cBorder, borderWidth: 1 });
-    if (isHigh) {
-      drawBox(x, 330, attrWidth, 2, { color: cBorderRed });
+    // Divisórias verticais entre colunas
+    if (i > 0) {
+      drawLineSeg(cx, attrTableY, cx, attrTableY + attrTableH, cInkSecondary, 0.8);
     }
-    drawTextAt(`${a.tag} ${a.name}`, x, 325, 8.5, fontHelveticaBold, isHigh ? cTextPure : cTextGold, {
-      alignCenter: true,
-      boxW: attrWidth
-    });
 
-    addField(a.field, a.val, x + 10, 336, attrWidth - 20, 42, {
+    // Cabeçalho da coluna
+    drawTextAt(`${a.name} [${a.tag}]`, cx, attrTableY + 14, 8, fontHelveticaBold, cInkPrimary, {
+      alignCenter: true,
+      boxW: attrColW
+    });
+    drawLineSeg(cx + 4, attrTableY + 18, cx + attrColW - 4, attrTableY + 18, cPaperLine, 0.6);
+
+    // Número do Atributo em destaque datilográfico grande
+    addField(a.field, a.val, cx + 10, attrTableY + 22, attrColW - 20, 36, {
       font: fontHelveticaBold,
-      fontSize: 24,
-      textColor: isHigh ? cTextPure : cTextWhite,
+      fontSize: 22,
+      textColor: cInkPrimary,
       alignCenter: true
     });
 
-    const dotStartX = x + attrWidth / 2 - 18;
-    for (let d = 1; d <= 5; d++) {
-      const dx = dotStartX + (d - 1) * 8;
-      const dotFilled = d <= numVal;
-      drawBox(dx, 384, 5, 5, {
-        color: dotFilled ? cBorderRed : rgb(40 / 255, 40 / 255, 40 / 255),
-        borderColor: cBorder,
-        borderWidth: 0.5
+    // Graduação de pontos (5 caixas quadradas datilografadas [■][■][ ][ ][ ])
+    const pipsStartX = cx + attrColW / 2 - 20;
+    for (let p = 1; p <= 5; p++) {
+      const px = pipsStartX + (p - 1) * 8.5;
+      const isFilled = p <= numVal;
+      drawBox(px, attrTableY + 62, 6, 6, {
+        color: isFilled ? cInkPrimary : cPaperBase,
+        borderColor: cInkSecondary,
+        borderWidth: 0.6
       });
     }
 
-    drawBox(x, 404, attrWidth, 26, { color: cCardAlt, borderColor: cBorder, borderWidth: 0.5 });
-    drawTextAt(a.desc, x, 420, 6.5, fontCourier, cTextMuted, { alignCenter: true, boxW: attrWidth });
+    // Aplicação / escopo funcional
+    drawLineSeg(cx + 4, attrTableY + 74, cx + attrColW - 4, attrTableY + 74, cPaperLine, 0.4);
+    drawTextAt(a.desc, cx, attrTableY + 84, 6.5, fontCourier, cInkMuted, {
+      alignCenter: true,
+      boxW: attrColW
+    });
   });
 
-  // Especializações Strip
-  drawBox(28, 438, 944, 34, { color: cCard, borderColor: cBorder, borderWidth: 1 });
-  drawTextAt("ESPECIALIZACOES (+2):", 38, 458, 9.5, fontHelveticaBold, cTextGold);
+  // Especializações Técnicas (+2) averbadas logo abaixo da matriz
+  const specY = 422;
+  drawTextAt("ESPECIALIZACOES TECNICAS (+2 DE BONUS):", 44, specY + 14, 8, fontCourierBold, cInkMuted);
 
-  // Spec 1
-  drawBox(215, 442, 355, 26, { color: cCardHeader, borderColor: cBorderRed, borderWidth: 1 });
-  drawBox(215, 442, 3, 26, { color: cBorderRed });
-  addField('especializacao_1', data.esp1, 222, 444, 280, 22, {
+  drawTextAt("1.", 260, specY + 14, 8, fontCourierBold, cInkPrimary);
+  drawLineSeg(276, specY + 16, 570, specY + 16, cInkSecondary, 0.8);
+  addField('especializacao_1', data.esp1, 278, specY - 2, 290, 18, {
     font: fontCourierBold,
     fontSize: 8.5,
-    textColor: cTextWhite
+    textColor: cInkPrimary
   });
-  drawBox(510, 445, 52, 20, { color: cRedDark, borderColor: cBorderRed, borderWidth: 1 });
-  drawTextAt("+2 [INT]", 510, 458, 8, fontCourierBold, cRedBright, { alignCenter: true, boxW: 52 });
+  drawTextAt("(+2)", 576, specY + 14, 7.5, fontCourierBold, cStampRed);
 
-  // Spec 2
-  drawBox(582, 442, 380, 26, { color: cCardHeader, borderColor: cBorderRed, borderWidth: 1 });
-  drawBox(582, 442, 3, 26, { color: cBorderRed });
-  addField('especializacao_2', data.esp2, 589, 444, 305, 22, {
+  drawTextAt("2.", 620, specY + 14, 8, fontCourierBold, cInkPrimary);
+  drawLineSeg(636, specY + 16, 915, specY + 16, cInkSecondary, 0.8);
+  addField('especializacao_2', data.esp2, 638, specY - 2, 275, 18, {
     font: fontCourierBold,
     fontSize: 8.5,
-    textColor: cTextWhite
+    textColor: cInkPrimary
   });
-  drawBox(902, 445, 52, 20, { color: cRedDark, borderColor: cBorderRed, borderWidth: 1 });
-  drawTextAt("+2 [FOR]", 902, 458, 8, fontCourierBold, cRedBright, { alignCenter: true, boxW: 52 });
+  drawTextAt("(+2)", 922, specY + 14, 7.5, fontCourierBold, cStampRed);
 
-  // ==================== 3. MONITORES VITAIS DE COMBATE ====================
-  drawSectionHeader(484, "03", "MONITORES VITAIS & PARAMETROS OPERACIONAIS", "SEC-03 // STATUS DE COMBATE");
+  // ==================== SEÇÃO 3: CONDIÇÃO OPERACIONAL E LIMITES FÍSICOS ====================
+  drawSectionTitle(450, "III.", "CONDICAO OPERACIONAL E PARAMETROS DE COMBATE");
 
   const numVig = parseInt(data.vigor) || 0;
   const numAgi = parseInt(data.agilidade) || 0;
@@ -525,203 +616,251 @@ export async function generateFichaPDF(data: FichaData): Promise<Uint8Array> {
   const vidaCalc = 10 + numVig * 2;
   const folegoCalc = 5 + numVig;
   const defesaCalc = 10 + numAgi;
-  const cargaCalc = 5 + numFor;
+  // FÓRMULA OFICIAL DE CARGA: 10 + 2 × For
+  const cargaCalc = 10 + numFor * 2;
 
   const vitals = [
-    { title: "PONTOS DE VIDA", formula: "10 + (VIG x 2)", field: "vital_vida", val: `${vidaCalc} PV`, color: cLife, totalDots: 16, fillDots: Math.min(vidaCalc, 16), sub: "INTEGRIDADE" },
-    { title: "PONTOS DE FOLEGO", formula: "5 + VIG", field: "vital_folego", val: `${folegoCalc} PF`, color: cStamina, totalDots: 8, fillDots: Math.min(folegoCalc, 8), sub: "RESISTENCIA" },
-    { title: "DEFESA PASSIVA", formula: "10 + AGI", field: "vital_defesa", val: `${defesaCalc} DEF`, color: cDefense, totalDots: 8, fillDots: Math.min(defesaCalc - 8, 8), sub: "ESQUIVA BASE" },
-    { title: "CAPACIDADE CARGA", formula: "5 + FOR", field: "vital_carga", val: `${cargaCalc} SLOTS`, color: cCargo, totalDots: 8, fillDots: Math.min(cargaCalc, 8), sub: "LIMITE DE PESO" }
+    { title: "PONTOS DE VIDA (PV)", formula: "10 + (2 x VIG)", field: "vital_vida", val: `${vidaCalc} PV`, totalDots: 16, fillDots: Math.min(vidaCalc, 16), sub: "Integridade Fisica" },
+    { title: "PONTOS DE FOLEGO (PF)", formula: "5 + VIG", field: "vital_folego", val: `${folegoCalc} PF`, totalDots: 8, fillDots: Math.min(folegoCalc, 8), sub: "Resistencia e Folego" },
+    { title: "DEFESA PASSIVA (DEF)", formula: "10 + AGI", field: "vital_defesa", val: `${defesaCalc} DEF`, totalDots: 8, fillDots: Math.min(defesaCalc - 8, 8), sub: "Esquiva e Protecao Base" },
+    { title: "CAPACIDADE DE CARGA", formula: "10 + (2 x FOR)", field: "vital_carga", val: `${cargaCalc} SLOTS`, totalDots: 8, fillDots: Math.min(cargaCalc, 8), sub: "Limite de Peso e Transporte" }
   ];
 
-  const vitWidth = 227;
-  const vitGap = 12;
+  const vitX = 44;
+  const vitY = 474;
+  const vitW = 912;
+  const vitColW = (vitW - 30) / 4; // ~220.5 px cada
+  const vitGap = 10;
+  const vitH = 104;
 
   vitals.forEach((v, i) => {
-    const x = 28 + i * (vitWidth + vitGap);
+    const vx = vitX + i * (vitColW + vitGap);
 
-    drawBox(x, 514, vitWidth, 108, { color: cCard, borderColor: cBorder, borderWidth: 1 });
-    drawBox(x, 514, 5, 108, { color: v.color });
+    // Borda física de prontuário
+    drawBox(vx, vitY, vitColW, vitH, { borderColor: cInkSecondary, borderWidth: 0.8 });
 
-    drawTextAt(v.title, x + 12, 528, 8, fontCourier, cTextMuted);
-    drawTextAt(v.formula, x + 135, 528, 6.5, fontCourier, cTextGold);
-    drawLineSeg(x + 12, 534, x + vitWidth - 10, 534, cBorder, 0.8);
+    drawTextAt(v.title, vx + 10, vitY + 14, 7.5, fontHelveticaBold, cInkPrimary);
+    drawTextAt(v.formula, vx + 10, vitY + 24, 7, fontCourierBold, cInkMuted);
+    drawLineSeg(vx + 8, vitY + 28, vx + vitColW - 8, vitY + 28, cPaperLine, 0.5);
 
-    addField(v.field, v.val, x + 12, 540, 110, 32, {
+    // Valor do Vital em destaque datilográfico
+    addField(v.field, v.val, vx + 10, vitY + 32, 110, 28, {
       font: fontHelveticaBold,
-      fontSize: 18,
-      textColor: cTextPure
+      fontSize: 16,
+      textColor: cInkPrimary
     });
 
-    drawTextAt(v.sub, x + 130, 560, 6.5, fontCourier, cTextMuted);
+    drawTextAt(v.sub, vx + 10, vitY + 66, 6.5, fontCourier, cInkMuted);
 
-    const boxX = x + 12;
-    const boxY = 578;
-    const boxW = vitWidth - 22;
-    const boxH = 34;
-    drawBox(boxX, boxY, boxW, boxH, { color: cInput, borderColor: cBorder, borderWidth: 0.8 });
+    // Caixas de marcação a lápis para acompanhamento em mesa [ ][ ][ ]...
+    const boxX = vx + 8;
+    const boxY = vitY + 72;
+    const boxW = vitColW - 16;
+    const boxH = 24;
+    drawBox(boxX, boxY, boxW, boxH, { borderColor: cPaperLine, borderWidth: 0.5 });
 
-    const pipW = 18;
-    const pipH = 10;
-    const pipGap = 6;
+    const pipW = 16;
+    const pipH = 8;
+    const pipGapX = 6;
     for (let p = 0; p < v.totalDots; p++) {
       const row = Math.floor(p / 8);
       const col = p % 8;
-      const px = boxX + 6 + col * (pipW + pipGap);
-      const pyBox = boxY + 6 + row * (pipH + 3);
+      const px = boxX + 6 + col * (pipW + pipGapX);
+      const pyBox = boxY + 3 + row * (pipH + 2.5);
       const isFilled = p < v.fillDots;
       drawBox(px, pyBox, pipW, pipH, {
-        color: isFilled ? v.color : rgb(35 / 255, 35 / 255, 35 / 255),
-        borderColor: cBorder,
+        color: isFilled ? cInkSecondary : cPaperBase,
+        borderColor: cInkFaint,
         borderWidth: 0.5
       });
     }
   });
 
-  // ==================== 4. PERFIL FÍSICO & PSICOLÓGICO ====================
-  drawSectionHeader(634, "04", "PERFIL FISICO & PSICOLOGICO", "SEC-04 // AVALIACAO DESCRITIVA");
+  // ==================== SEÇÃO 4: LAUDO DESCRITIVO E PERFIL COMPORTAMENTAL ====================
+  drawSectionTitle(590, "IV.", "LAUDO DESCRITIVO E PERFIL DO INDIVIDUO");
 
-  const colW = 466;
-  // Col 1: Aparência
-  drawBox(28, 664, colW, 135, { color: cCard, borderColor: cBorder, borderWidth: 1 });
-  drawTextAt("APARENCIA FISICA & MARCAS DISTINTIVAS:", 38, 680, 8, fontCourier, cTextMuted);
-  drawTextAt("IDENTIFICACAO VISUAL", 360, 680, 7, fontCourier, cTextMuted);
-  drawLineSeg(38, 686, 484, 686, cBorder, 0.8);
-  addField('aparencia', data.aparencia, 38, 692, colW - 20, 100, {
-    font: fontHelvetica,
+  const descColW = 448;
+  const descY = 614;
+  const descH = 126;
+
+  // Coluna 1: Aparência Física
+  drawBox(44, descY, descColW, descH, { borderColor: cInkSecondary, borderWidth: 0.8 });
+  drawTextAt("APARENCIA FISICA E SINAIS DISTINTIVOS", 54, descY + 14, 7.5, fontHelveticaBold, cInkPrimary);
+  drawTextAt("(Constituicao, cicatrizes, vestimentas e marcas visuais)", 54, descY + 24, 6.5, fontCourier, cInkMuted);
+  drawLineSeg(54, descY + 28, 44 + descColW - 10, descY + 28, cPaperLine, 0.5);
+
+  // Linhas-guia pautadas de relatório antigo
+  for (let l = 1; l <= 4; l++) {
+    drawLineSeg(54, descY + 28 + l * 20, 44 + descColW - 10, descY + 28 + l * 20, cPaperLine, 0.4);
+  }
+  addField('aparencia', data.aparencia, 54, descY + 30, descColW - 20, 90, {
+    font: fontCourier,
     fontSize: 8.5,
-    textColor: cTextGold,
+    textColor: cInkPrimary,
     multiline: true
   });
 
-  // Col 2: Personalidade
-  drawBox(506, 664, colW, 135, { color: cCard, borderColor: cBorder, borderWidth: 1 });
-  drawTextAt("PERSONALIDADE & CONDUTA SOB PRESSAO:", 516, 680, 8, fontCourier, cTextMuted);
-  drawTextAt("ESTABILIDADE COGNITIVA", 825, 680, 7, fontCourier, cTextMuted);
-  drawLineSeg(516, 686, 962, 686, cBorder, 0.8);
-  addField('personalidade', data.personalidade, 516, 692, colW - 20, 100, {
-    font: fontHelvetica,
+  // Coluna 2: Perfil Psicológico
+  const col2X = 508;
+  drawBox(col2X, descY, descColW, descH, { borderColor: cInkSecondary, borderWidth: 0.8 });
+  drawTextAt("PERFIL PSICOLOGICO E CONDUTA SOB ESTRESSE", col2X + 10, descY + 14, 7.5, fontHelveticaBold, cInkPrimary);
+  drawTextAt("(Temperamento, reacoes ao perigo e estabilidade mental)", col2X + 10, descY + 24, 6.5, fontCourier, cInkMuted);
+  drawLineSeg(col2X + 10, descY + 28, col2X + descColW - 10, descY + 28, cPaperLine, 0.5);
+
+  for (let l = 1; l <= 4; l++) {
+    drawLineSeg(col2X + 10, descY + 28 + l * 20, col2X + descColW - 10, descY + 28 + l * 20, cPaperLine, 0.4);
+  }
+  addField('personalidade', data.personalidade, col2X + 10, descY + 30, descColW - 20, 90, {
+    font: fontCourier,
     fontSize: 8.5,
-    textColor: cTextGold,
+    textColor: cInkPrimary,
     multiline: true
   });
 
-  // ==================== 5. HISTÓRICO & ÂNCORAS NARRATIVAS ====================
-  drawSectionHeader(811, "05", "HISTORICO & ANCORAS NARRATIVAS", "SEC-05 // MOTIVACOES & TRAUMAS");
+  // ==================== SEÇÃO 5: ÂNCORAS NARRATIVAS E MOTIVAÇÕES ====================
+  drawSectionTitle(752, "V.", "ANCORAS NARRATIVAS E ANTECEDENTES");
+
+  const ancY1 = 776;
+  const ancY2 = 840;
+  const ancH = 56;
 
   const anchors = [
-    { label: "OBJETIVO PESSOAL:", field: "objetivo_pessoal", val: data.objetivo, x: 28, y: 841 },
-    { label: "MAIOR MEDO:", field: "maior_medo", val: data.medo, x: 506, y: 841 },
-    { label: "LIGACAO COM SOBREVIVENTE:", field: "ligacao_sobrevivente", val: data.ligacao, x: 28, y: 917 },
-    { label: "SEGREDO OU CONFLITO:", field: "segredo_conflito", val: data.segredo, x: 506, y: 917 }
+    { label: "OBJETIVO PESSOAL:", field: "objetivo_pessoal", val: data.objetivo, x: 44, y: ancY1 },
+    { label: "MAIOR MEDO OU VULNERABILIDADE:", field: "maior_medo", val: data.medo, x: 508, y: ancY1 },
+    { label: "LIGACAO COM OUTRO SOBREVIVENTE:", field: "ligacao_sobrevivente", val: data.ligacao, x: 44, y: ancY2 },
+    { label: "SEGREDO OU PONTO DE CONFLITO:", field: "segredo_conflito", val: data.segredo, x: 508, y: ancY2 }
   ];
 
   anchors.forEach((anc) => {
-    drawBox(anc.x, anc.y, colW, 68, { color: cCard, borderColor: cBorder, borderWidth: 1 });
-    drawTextAt(anc.label, anc.x + 10, anc.y + 16, 8, fontCourierBold, cRedBright);
-    addField(anc.field, anc.val, anc.x + 10, anc.y + 22, colW - 20, 42, {
-      font: fontHelvetica,
+    drawBox(anc.x, anc.y, descColW, ancH, { borderColor: cInkSecondary, borderWidth: 0.8 });
+    drawTextAt(anc.label, anc.x + 10, anc.y + 12, 7.5, fontCourierBold, cInkPrimary);
+    drawLineSeg(anc.x + 10, anc.y + 15, anc.x + descColW - 10, anc.y + 15, cPaperLine, 0.5);
+    addField(anc.field, anc.val, anc.x + 10, anc.y + 18, descColW - 20, 34, {
+      font: fontCourier,
       fontSize: 8.5,
-      textColor: cTextWhite,
+      textColor: cInkPrimary,
       multiline: true
     });
   });
 
-  // ==================== 6. MANIFESTO DE CARGA & EQUIPAMENTO ====================
-  drawSectionHeader(997, "06", "MANIFESTO DE CARGA & EQUIPAMENTO INICIAL", "SEC-06 // LOGISTICA DE SOBREVIVENCIA");
+  // ==================== SEÇÃO 6: MANIFESTO DE CARGA E EQUIPAMENTO ====================
+  drawSectionTitle(908, "VI.", "MANIFESTO DE EQUIPAMENTO E CARGA INICIAL");
+
+  const eqY = 932;
+  const eqW1 = 295;
+  const eqW2 = 295;
+  const eqW3 = 302;
+  const eqH = 90;
 
   const invItems = [
-    { label: "ARMA PRINCIPAL:", slot: "SLOT 1", field: "equip_arma", val: data.arma, note: "Condicao: Robusta | Peso: 1 slot", x: 28, w: 290 },
-    { label: "FERRAMENTA DE CAMPO:", slot: "SLOT 2", field: "equip_ferramenta", val: data.ferramenta, note: "Condicao: Operacional | Iluminacao 10m", x: 330, w: 290 },
-    { label: "OUTROS ITENS & MANTIMENTOS:", slot: "SLOTS 3-4", field: "equip_outros", val: data.outrosItens, note: "Slots Ocupados: 4 / 8 Capacidade Maxima", x: 632, w: 340 }
+    { label: "ARMA PRINCIPAL [SLOT 1]", field: "equip_arma", val: data.arma, note: "Armamento de porte imediato", x: 44, w: eqW1 },
+    { label: "FERRAMENTA DE CAMPO [SLOT 2]", field: "equip_ferramenta", val: data.ferramenta, note: "Utilitario e iluminacao", x: 349, w: eqW2 },
+    { label: "OUTROS ITENS E PROVISOES [SLOTS 3-4]", field: "equip_outros", val: data.outrosItens, note: "Mochila e mantimentos adicionais", x: 654, w: eqW3 }
   ];
 
   invItems.forEach((item) => {
-    drawBox(item.x, 1027, item.w, 88, { color: cCard, borderColor: cBorder, borderWidth: 1 });
-    drawTextAt(item.label, item.x + 10, 1042, 7.5, fontCourier, cTextMuted);
-    drawTextAt(item.slot, item.x + item.w - 75, 1042, 7.5, fontCourier, cTextGold);
+    drawBox(item.x, eqY, item.w, eqH, { borderColor: cInkSecondary, borderWidth: 0.8 });
+    drawTextAt(item.label, item.x + 10, eqY + 14, 7.5, fontCourierBold, cInkPrimary);
+    drawLineSeg(item.x + 8, eqY + 18, item.x + item.w - 8, eqY + 18, cPaperLine, 0.5);
 
-    drawBox(item.x + 10, 1048, item.w - 20, 38, { color: cInput, borderColor: cBorder, borderWidth: 1 });
-    drawBox(item.x + 10, 1048, 3, 38, { color: cBorderRed });
-
-    addField(item.field, item.val, item.x + 16, 1050, item.w - 30, 20, {
+    addField(item.field, item.val, item.x + 10, eqY + 22, item.w - 20, 46, {
       font: fontCourierBold,
-      fontSize: 8,
-      textColor: cTextWhite
+      fontSize: 8.5,
+      textColor: cInkPrimary,
+      multiline: true
     });
-    drawTextAt(item.note, item.x + 16, 1080, 6.5, fontCourier, cTextMuted);
+
+    drawTextAt(item.note, item.x + 10, eqY + 80, 6.5, fontCourier, cInkMuted);
   });
 
-  // ==================== 7. DECLARAÇÃO LEGAL & ASSINATURA ====================
-  drawSectionHeader(1127, "07", "DECLARACAO LEGAL & AUTENTICACAO DE CAMPO", "SEC-07 // HOMOLOGACAO");
+  // ==================== SEÇÃO 7: TERMO DE RESPONSABILIDADE E AUTENTICAÇÃO ====================
+  drawSectionTitle(1034, "VII.", "TERMO DE CIENCIA E AUTENTICACAO DE REGISTRO");
 
-  drawBox(28, 1157, 944, 215, { color: cCardAlt, borderColor: cBorder, borderWidth: 1 });
-  drawBox(38, 1167, 924, 56, { color: cInput, borderColor: cBorderLight, borderWidth: 0.8 });
+  const signY = 1058;
+  const signH = 196;
 
+  drawBox(44, signY, 912, signH, { borderColor: cInkSecondary, borderWidth: 0.8 });
+
+  // Termo de Declaração de Ciência e Regras
   const chk = form.createCheckBox('declaracao_lida');
   if (data.declaracaoLida) {
     chk.check();
   }
   chk.addToPage(page, {
-    x: sx(48),
-    y: py(1177 + 16),
-    width: sx(16),
-    height: sy(16),
+    x: sx(56),
+    y: py(signY + 16 + 14),
+    width: sx(14),
+    height: sy(14),
     borderWidth: 1,
-    borderColor: cBorderRed,
-    backgroundColor: cRedDark,
+    borderColor: cStampRed,
+    backgroundColor: undefined,
   });
 
-  const txtTermo1 = "DECLARACAO DE CIENCIA E REGRAS: Confirmo que li e aceito as regras de sobrevivencia, combate,";
+  const txtTermo1 = "DECLARACAO FORMAL: Confirmo ter lido e aceito integralmente as regras de sobrevivencia, combate,";
   const txtTermo2 = "ausencia, infeccao bacteriana e morte permanente (Permadeath) de DEAD HOURS. Estou ciente de";
-  const txtTermo3 = "que cada decisao no ermo e irrevogavel e que a arbitragem dos mestres no WhatsApp e soberana.";
-  drawTextAt(txtTermo1, 74, 1182, 7.5, fontCourier, cTextMuted);
-  drawTextAt(txtTermo2, 74, 1195, 7.5, fontCourier, cTextMuted);
-  drawTextAt(txtTermo3, 74, 1208, 7.5, fontCourier, cTextMuted);
+  const txtTermo3 = "que cada decisao tomada no ermo e irrevogavel e que a arbitragem dos mestres no WhatsApp e soberana.";
+  drawTextAt(txtTermo1, 78, signY + 20, 7.5, fontCourierBold, cInkPrimary);
+  drawTextAt(txtTermo2, 78, signY + 32, 7.5, fontCourier, cInkSecondary);
+  drawTextAt(txtTermo3, 78, signY + 44, 7.5, fontCourier, cInkSecondary);
 
-  drawLineSeg(38, 1234, 962, 1234, cBorder, 0.8);
+  drawLineSeg(54, signY + 62, 946, signY + 62, cPaperLine, 0.6);
 
-  addField('assinatura_jogador', data.assinatura, 50, 1256, 330, 36, {
+  // Assinatura do Sobrevivente
+  drawTextAt("ASSINATURA FORMAL DO SOBREVIVENTE:", 56, signY + 80, 7.5, fontCourierBold, cInkMuted);
+  addField('assinatura_jogador', data.assinatura, 56, signY + 86, 310, 36, {
     font: fontTimesItalic,
     fontSize: 16,
-    textColor: cTextPure
+    textColor: cInkPrimary
   });
-  drawLineSeg(50, 1294, 380, 1294, cBorderLight, 1);
-  drawTextAt("ASSINATURA FORMAL DO SOBREVIVENTE", 50, 1308, 7.5, fontCourier, cTextMuted, { alignCenter: true, boxW: 330 });
+  drawLineSeg(56, signY + 124, 366, signY + 124, cInkSecondary, 1);
+  drawTextAt("Assinatura do Sobrevivente / Jogador", 56, signY + 136, 7, fontCourier, cInkMuted, { alignCenter: true, boxW: 310 });
 
-  addField('data_registro', data.data, 410, 1262, 140, 30, {
+  // Data Oficial de Expedição
+  drawTextAt("DATA DE REGISTRO:", 396, signY + 80, 7.5, fontCourierBold, cInkMuted);
+  addField('data_registro', data.data, 396, signY + 92, 140, 28, {
     font: fontCourierBold,
-    fontSize: 10,
-    textColor: cTextPure,
+    fontSize: 9.5,
+    textColor: cInkPrimary,
     alignCenter: true
   });
-  drawLineSeg(410, 1294, 550, 1294, cBorderLight, 1);
-  drawTextAt("DATA DE REGISTRO OFICIAL", 410, 1308, 7.5, fontCourier, cTextMuted, { alignCenter: true, boxW: 140 });
+  drawLineSeg(396, signY + 124, 536, signY + 124, cInkSecondary, 1);
+  drawTextAt("Data de Expedicao Oficial", 396, signY + 136, 7, fontCourier, cInkMuted, { alignCenter: true, boxW: 140 });
 
-  const stampAngle = degrees(-3);
-  drawBox(650, 1254, 270, 48, {
-    color: rgb(45 / 255, 12 / 255, 15 / 255),
-    borderColor: cBorderRed,
-    borderWidth: 2,
-    rotate: stampAngle
+  // Carimbo Oficial Vintage de Homologação
+  const stampAngleDoc = degrees(-4);
+  drawBox(570, signY + 76, 360, 56, {
+    borderColor: cStampRed,
+    borderWidth: 1.8,
+    rotate: stampAngleDoc
   });
-  drawTextAt("SOBREVIVENTE HOMOLOGADO", 650, 1272, 10, fontHelveticaBold, cRedBright, {
-    alignCenter: true,
-    boxW: 270,
-    rotate: stampAngle
-  });
-  drawTextAt("POSTO DE TRIAGEM // APTO AO ERMO", 650, 1286, 7.5, fontCourierBold, cTextGold, {
-    alignCenter: true,
-    boxW: 270,
-    rotate: stampAngle
-  });
-  drawTextAt("REGISTRO PERMANENTE // SECTOR Z-01", 650, 1298, 6.5, fontCourier, cTextWhite, {
-    alignCenter: true,
-    boxW: 270,
-    rotate: stampAngle
+  drawBox(573, signY + 79, 354, 50, {
+    borderColor: cStampRed,
+    borderWidth: 0.6,
+    rotate: stampAngleDoc
   });
 
-  form.updateFieldAppearances(fontHelveticaBold);
+  drawTextAt("DEAD HOURS", 570, signY + 92, 8.5, fontCourierBold, cStampRed, {
+    alignCenter: true,
+    boxW: 360,
+    rotate: stampAngleDoc
+  });
+  drawTextAt("* SOBREVIVENTE REGISTRADO *", 570, signY + 107, 12, fontHelveticaBold, cStampRedDark, {
+    alignCenter: true,
+    boxW: 360,
+    rotate: stampAngleDoc
+  });
+  drawTextAt("ARQUIVO DE SOBREVIVENCIA // HOMOLOGACAO", 570, signY + 121, 7.5, fontCourierBold, cStampRed, {
+    alignCenter: true,
+    boxW: 360,
+    rotate: stampAngleDoc
+  });
+
+  // ==================== RODAPÉ DO DOCUMENTO ====================
+  drawLineSeg(44, 1360, 956, 1360, cInkSecondary, 0.8);
+  drawTextAt("DEAD HOURS RPG // PRONTUARIO DE SOBREVIVENTE // ARQUIVO HISTORICO RECUPERADO", 44, 1374, 7, fontCourier, cInkMuted);
+  drawTextAt("DOCUMENTACAO OFICIAL // FORMULARIO 104-DH // PAGINA 1 DE 1", 580, 1374, 7, fontCourier, cInkMuted);
+
+  form.updateFieldAppearances();
   const pdfBytes = await pdfDoc.save();
   return pdfBytes;
 }
@@ -770,8 +909,8 @@ function drawCanvasMultiline(
 }
 
 /**
- * Renderiza a ficha preenchida em um elemento HTML5 Canvas com alta resolução,
- * compartilhando exatamente o mesmo layout, proporção e coordenadas do PDF oficial.
+ * Renderiza o Prontuário preenchido em um elemento HTML5 Canvas com alta resolução,
+ * compartilhando rigorosamente a mesma composição física, proporções, coordenadas e identidade visual do PDF.
  */
 export async function renderFichaToCanvas(data: FichaData, canvas: HTMLCanvasElement): Promise<void> {
   const scale = FICHA_CONFIG.pngScale;
@@ -783,7 +922,7 @@ export async function renderFichaToCanvas(data: FichaData, canvas: HTMLCanvasEle
     throw new Error('Não foi possível obter contexto 2D do Canvas.');
   }
 
-  // Aguarda fontes prontas no navegador se disponíveis
+  // Aguarda fontes do navegador se disponíveis
   if (typeof document !== 'undefined' && 'fonts' in document) {
     try {
       await document.fonts.ready;
@@ -797,189 +936,248 @@ export async function renderFichaToCanvas(data: FichaData, canvas: HTMLCanvasEle
 
   const colors = FICHA_CONFIG.colors;
 
-  // 1. Fundo Oficial
-  ctx.fillStyle = colors.bg;
+  // ==================== 1. PAPEL ENVELHECIDO & MATERIALIDADE ====================
+  // Base do papel antigo
+  ctx.fillStyle = colors.paperBase;
   ctx.fillRect(0, 0, 1000, 1414);
 
-  // 2. Grade tática de precisão
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < 1000; x += 32) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, 1414);
-    ctx.stroke();
-  }
-  for (let y = 0; y < 1414; y += 32) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(1000, y);
-    ctx.stroke();
-  }
+  // Efeito de envelhecimento periférico / vinheta nas bordas
+  const topGrad = ctx.createLinearGradient(0, 0, 0, 36);
+  topGrad.addColorStop(0, 'rgba(182, 160, 122, 0.40)');
+  topGrad.addColorStop(1, 'rgba(182, 160, 122, 0)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, 1000, 36);
 
-  // 3. Moldura Externa e Miras
-  ctx.strokeStyle = colors.border;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(14, 14, 972, 1386);
+  const bottomGrad = ctx.createLinearGradient(0, 1414, 0, 1378);
+  bottomGrad.addColorStop(0, 'rgba(182, 160, 122, 0.40)');
+  bottomGrad.addColorStop(1, 'rgba(182, 160, 122, 0)');
+  ctx.fillStyle = bottomGrad;
+  ctx.fillRect(0, 1378, 1000, 36);
 
-  ctx.strokeStyle = 'rgba(120, 29, 36, 0.35)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(18, 18, 964, 1378);
+  const leftGrad = ctx.createLinearGradient(0, 0, 36, 0);
+  leftGrad.addColorStop(0, 'rgba(182, 160, 122, 0.40)');
+  leftGrad.addColorStop(1, 'rgba(182, 160, 122, 0)');
+  ctx.fillStyle = leftGrad;
+  ctx.fillRect(0, 0, 36, 1414);
 
-  ctx.fillStyle = colors.borderRed;
-  ctx.font = 'bold 11px "IBM Plex Mono", "Consolas", monospace';
-  ctx.fillText('[ + ]', 22, 30);
-  ctx.fillText('[ + ]', 952, 30);
-  ctx.fillText('[ + ]', 22, 1395);
-  ctx.fillText('[ + ]', 952, 1395);
+  const rightGrad = ctx.createLinearGradient(1000, 0, 964, 0);
+  rightGrad.addColorStop(0, 'rgba(182, 160, 122, 0.40)');
+  rightGrad.addColorStop(1, 'rgba(182, 160, 122, 0)');
+  ctx.fillStyle = rightGrad;
+  ctx.fillRect(964, 0, 36, 1414);
 
-  // 4. Barra Superior de Segurança
-  ctx.fillStyle = colors.redDark;
-  ctx.fillRect(28, 24, 944, 20);
-  ctx.strokeStyle = colors.borderRed;
-  ctx.lineWidth = 1;
-  ctx.strokeRect(28, 24, 944, 20);
-
-  ctx.fillStyle = colors.textPure;
-  ctx.font = 'bold 9.5px "IBM Plex Mono", "Consolas", monospace';
-  ctx.fillText('DEAD HOURS // REGISTRO DE SOBREVIVENTE // PROTOCOLO DE TRIAGEM 1.0', 38, 38);
-  ctx.fillStyle = colors.textGold;
-  ctx.fillText('UTC-3 (BRASILIA)', 740, 38);
-  ctx.fillStyle = colors.redBright;
-  ctx.fillText('CAMPO ATIVO', 885, 38);
-
-  // 5. Cabeçalho Principal
-  ctx.fillStyle = colors.card;
-  ctx.fillRect(28, 52, 54, 54);
-  ctx.strokeStyle = colors.borderRed;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(28, 52, 54, 54);
-
-  ctx.fillStyle = colors.textPure;
-  ctx.font = 'bold 24px "Oswald", "Arial Black", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('DH', 55, 78);
-  ctx.fillStyle = colors.redBright;
-  ctx.font = 'bold 8px "IBM Plex Mono", "Consolas", monospace';
-  ctx.fillText('SURV', 55, 96);
-  ctx.textAlign = 'left';
-
-  ctx.fillStyle = colors.textPure;
-  ctx.font = 'bold 24px "Oswald", "Arial Black", sans-serif';
-  ctx.fillText('REGISTRO DE SOBREVIVENTE', 94, 76);
-  ctx.fillStyle = colors.textGold;
-  ctx.font = '10px "IBM Plex Mono", "Consolas", monospace';
-  ctx.fillText('DOSSIE TECNICO DE IDENTIFICACAO E APTIDAO DE CAMPO', 96, 94);
-
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '9px "IBM Plex Mono", "Consolas", monospace';
-  ctx.fillText('REF: DH-REG-04 // SERVICO ATIVO', 725, 68);
-  ctx.fillText('POSTO DE TRIAGEM: SECTOR Z-01', 725, 80);
-
-  ctx.fillStyle = colors.borderRed;
-  ctx.fillRect(725, 85, 180, 18);
-  ctx.strokeStyle = colors.redBright;
-  ctx.lineWidth = 1;
-  ctx.strokeRect(725, 85, 180, 18);
-  ctx.fillStyle = colors.textPure;
-  ctx.font = 'bold 9px "IBM Plex Mono", "Consolas", monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('SOBREVIVENTE AVALIADO', 815, 98);
-  ctx.textAlign = 'left';
-
-  ctx.strokeStyle = colors.borderRed;
-  ctx.lineWidth = 2;
+  // Manchas de tempo orgânicas e oxidação sutil
+  ctx.save();
+  ctx.fillStyle = 'rgba(195, 175, 135, 0.22)';
   ctx.beginPath();
-  ctx.moveTo(28, 118);
-  ctx.lineTo(972, 118);
+  ctx.arc(90, 85, 70, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(890, 1340, 80, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(910, 600, 50, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Marca de dobra horizontal de arquivamento (y = 707)
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(24, 707);
+  ctx.lineTo(976, 707);
   ctx.stroke();
 
-  // Helper para Seções
-  const drawSectionHeader = (y: number, num: string, title: string, code: string) => {
-    ctx.fillStyle = colors.cardHeader;
-    ctx.fillRect(28, y, 944, 24);
-    ctx.strokeStyle = colors.border;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(28, y, 944, 24);
+  ctx.strokeStyle = 'rgba(70, 55, 35, 0.16)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(24, 708);
+  ctx.lineTo(976, 708);
+  ctx.stroke();
 
-    ctx.fillStyle = colors.borderRed;
-    ctx.fillRect(28, y, 5, 24);
+  // Moldura institucional com traço tipográfico clássico
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(32, 26, 936, 1362);
 
-    ctx.fillStyle = colors.redDark;
-    ctx.fillRect(38, y + 3, 22, 18);
-    ctx.strokeStyle = colors.borderRed;
-    ctx.strokeRect(38, y + 3, 22, 18);
+  ctx.strokeStyle = colors.inkFaint;
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(36, 30, 928, 1354);
 
-    ctx.fillStyle = colors.textPure;
-    ctx.font = 'bold 9px "IBM Plex Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(num, 49, y + 16);
+  // Miras e cruzetas nos cantos
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = 'bold 10px "Courier New", Courier, monospace';
+  ctx.fillText('+', 38, 42);
+  ctx.fillText('+', 956, 42);
+  ctx.fillText('+', 38, 1378);
+  ctx.fillText('+', 956, 1378);
 
-    ctx.font = 'bold 13px "Oswald", "Arial Black", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(title, 68, y + 17);
+  // ==================== 2. CABEÇALHO DO PRONTUÁRIO (MASTHEAD) ====================
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = 'bold 9.5px "Courier New", Courier, monospace';
+  ctx.fillText('PRONTUARIO DE SOBREVIVENTE // ARQUIVO HISTORICO RECUPERADO', 44, 46);
+  ctx.fillText('FORMULARIO N* 104-DH', 820, 46);
 
-    ctx.fillStyle = colors.textMuted;
-    ctx.font = '8.5px "IBM Plex Mono", monospace';
-    ctx.fillText(code, 735, y + 16);
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(44, 52);
+  ctx.lineTo(956, 52);
+  ctx.stroke();
+
+  ctx.strokeStyle = colors.inkFaint;
+  ctx.lineWidth = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(44, 54);
+  ctx.lineTo(956, 54);
+  ctx.stroke();
+
+  // Título Institucional
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.font = 'bold 28px "Oswald", "Arial Black", sans-serif';
+  ctx.fillText('DEAD HOURS', 44, 82);
+  ctx.font = 'bold 12px "Oswald", "Arial Black", sans-serif';
+  ctx.fillStyle = colors.inkSecondary;
+  ctx.fillText('PRONTUARIO DE IDENTIFICACAO DE SOBREVIVENTE', 46, 98);
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = '9.5px "Courier New", Courier, monospace';
+  ctx.fillText('DOCUMENTACAO DE REGISTRO INDIVIDUAL // EDICAO DE CAMPO', 46, 110);
+
+  // Carimbo no canto superior direito
+  ctx.save();
+  ctx.translate(780, 64);
+  ctx.rotate(-4 * Math.PI / 180);
+  ctx.strokeStyle = colors.stampRed;
+  ctx.lineWidth = 1.4;
+  ctx.strokeRect(0, 0, 160, 32);
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(3, 3, 154, 26);
+  ctx.fillStyle = colors.stampRed;
+  ctx.font = 'bold 8.5px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('DEAD HOURS', 80, 12);
+  ctx.fillStyle = colors.stampRedDark;
+  ctx.font = 'bold 10px "Oswald", sans-serif';
+  ctx.fillText('[ ARQUIVO RECUPERADO ]', 80, 24);
+  ctx.restore();
+  ctx.textAlign = 'left';
+
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(44, 122);
+  ctx.lineTo(956, 122);
+  ctx.stroke();
+
+  ctx.strokeStyle = colors.inkFaint;
+  ctx.lineWidth = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(44, 124);
+  ctx.lineTo(956, 124);
+  ctx.stroke();
+
+  // Helper de Linhas de Seção Histórica
+  const drawSectionTitle = (y: number, numStr: string, titleStr: string) => {
+    ctx.strokeStyle = colors.inkSecondary;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(44, y);
+    ctx.lineTo(956, y);
+    ctx.stroke();
+
+    ctx.fillStyle = colors.stampRed;
+    ctx.font = 'bold 11px "Oswald", sans-serif';
+    ctx.fillText(numStr, 44, y + 13);
+    ctx.fillStyle = colors.inkPrimary;
+    ctx.fillText(titleStr, 68, y + 13);
+
+    ctx.strokeStyle = colors.paperLine;
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(44, y + 17);
+    ctx.lineTo(956, y + 17);
+    ctx.stroke();
   };
 
-  // ==================== 1. IDENTIFICAÇÃO ====================
-  drawSectionHeader(130, "01", "IDENTIFICACAO DO INDIVIDUO", "SEC-01 // REGISTRO CIVIL & CAMPO");
+  // ==================== SEÇÃO 1: IDENTIFICAÇÃO PESSOAL & FOTOGRAFIA ANEXADA ====================
+  drawSectionTitle(130, "I.", "IDENTIFICACAO PESSOAL E REGISTRO CIVIL");
 
-  ctx.fillStyle = colors.card;
-  ctx.fillRect(28, 160, 740, 108);
-  ctx.strokeStyle = colors.border;
-  ctx.strokeRect(28, 160, 740, 108);
+  // Nome do Sobrevivente
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = 'bold 9.5px "Courier New", monospace';
+  ctx.fillText('NOME DO SOBREVIVENTE:', 44, 160);
 
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '8.5px "IBM Plex Mono", monospace';
-  ctx.fillText('NOME DO SOBREVIVENTE (IDENTIFICADOR DE CAMPO):', 38, 174);
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(44, 184);
+  ctx.lineTo(710, 184);
+  ctx.stroke();
 
-  ctx.fillStyle = 'rgba(120, 29, 36, 0.15)';
-  ctx.fillRect(38, 180, 720, 26);
-  ctx.strokeStyle = colors.borderRed;
-  ctx.strokeRect(38, 180, 720, 26);
-  ctx.fillStyle = colors.textPure;
-  ctx.font = 'bold 15px "Oswald", "Inter", sans-serif';
-  ctx.fillText(data.nomePersonagem || '—', 46, 198);
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.font = 'bold 15px "Oswald", "Courier New", sans-serif';
+  ctx.fillText(data.nomePersonagem || '—', 48, 178);
 
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '8.5px "IBM Plex Mono", monospace';
-  ctx.fillText('NOME DO JOGADOR:', 38, 220);
-  ctx.fillStyle = colors.input;
-  ctx.fillRect(38, 224, 345, 22);
-  ctx.strokeStyle = colors.border;
-  ctx.strokeRect(38, 224, 345, 22);
-  ctx.fillStyle = colors.textWhite;
-  ctx.font = 'bold 11px "Inter", sans-serif';
-  ctx.fillText(data.nomeJogador || '—', 46, 239);
+  // Nome do Jogador e Idade
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = 'bold 9.5px "Courier New", monospace';
+  ctx.fillText('NOME DO JOGADOR:', 44, 206);
 
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '8.5px "IBM Plex Mono", monospace';
-  ctx.fillText('IDADE CRONOLOGICA:', 400, 220);
-  ctx.fillStyle = colors.input;
-  ctx.fillRect(400, 224, 120, 22);
-  ctx.strokeStyle = colors.border;
-  ctx.strokeRect(400, 224, 120, 22);
-  ctx.fillStyle = colors.textWhite;
-  ctx.fillText(data.idade || '—', 408, 239);
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(44, 230);
+  ctx.lineTo(520, 230);
+  ctx.stroke();
 
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '8.5px "IBM Plex Mono", monospace';
-  ctx.fillText('OCUPACAO ANTERIOR:', 535, 220);
-  ctx.fillStyle = colors.input;
-  ctx.fillRect(535, 224, 223, 22);
-  ctx.strokeStyle = colors.border;
-  ctx.strokeRect(535, 224, 223, 22);
-  ctx.fillStyle = colors.textWhite;
-  ctx.fillText(data.ocupacao || '—', 543, 239);
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.font = 'bold 11.5px "Courier New", monospace';
+  ctx.fillText(data.nomeJogador || '—', 48, 224);
 
-  // Photo Box (Identificação Fotográfica do Sobrevivente)
-  ctx.fillStyle = colors.card;
-  ctx.fillRect(780, 160, 192, 108);
-  ctx.strokeStyle = colors.border;
-  ctx.strokeRect(780, 160, 192, 108);
+  ctx.fillStyle = colors.inkMuted;
+  ctx.fillText('IDADE:', 540, 206);
+  ctx.beginPath();
+  ctx.moveTo(540, 230);
+  ctx.lineTo(710, 230);
+  ctx.stroke();
+
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.textAlign = 'center';
+  ctx.fillText(data.idade || '—', 625, 224);
+  ctx.textAlign = 'left';
+
+  // Ocupação Anterior
+  ctx.fillStyle = colors.inkMuted;
+  ctx.fillText('OCUPACAO ANTERIOR AO COLAPSO:', 44, 252);
+  ctx.beginPath();
+  ctx.moveTo(44, 276);
+  ctx.lineTo(710, 276);
+  ctx.stroke();
+
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.fillText(data.ocupacao || '—', 48, 270);
+
+  // Fotografia Física Anexada (à direita)
+  const photoFrameX = 735;
+  const photoFrameY = 136;
+  const photoFrameW = 221;
+  const photoFrameH = 146;
+
+  ctx.fillStyle = colors.photoPaper;
+  ctx.fillRect(photoFrameX, photoFrameY, photoFrameW, photoFrameH);
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(photoFrameX, photoFrameY, photoFrameW, photoFrameH);
+  ctx.strokeStyle = colors.paperLine;
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(photoFrameX + 1, photoFrameY + 1, photoFrameW - 2, photoFrameH - 2);
+
+  const photoInnerX = photoFrameX + 8;
+  const photoInnerY = photoFrameY + 8;
+  const photoInnerW = photoFrameW - 16;
+  const photoInnerH = Math.round(photoInnerW / 1.83);
 
   let canvasPhotoDrawn = false;
   if (data.foto && typeof Image !== 'undefined') {
@@ -996,27 +1194,10 @@ export async function renderFichaToCanvas(data: FichaData, canvas: HTMLCanvasEle
       if (img.naturalWidth > 0) {
         ctx.save();
         ctx.beginPath();
-        ctx.rect(792, 168, 168, 92);
+        ctx.rect(photoInnerX, photoInnerY, photoInnerW, photoInnerH);
         ctx.clip();
-        ctx.drawImage(img, 792, 168, 168, 92);
+        ctx.drawImage(img, photoInnerX, photoInnerY, photoInnerW, photoInnerH);
         ctx.restore();
-
-        ctx.strokeStyle = colors.borderRed;
-        ctx.lineWidth = 1.2;
-        ctx.strokeRect(792, 168, 168, 92);
-
-        ctx.fillStyle = 'rgba(20, 10, 12, 0.85)';
-        ctx.fillRect(808, 246, 136, 12);
-        ctx.strokeStyle = colors.borderRed;
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(808, 246, 136, 12);
-
-        ctx.fillStyle = colors.redBright;
-        ctx.font = 'bold 7px "IBM Plex Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('[ REGISTRO BIOMETRICO ]', 876, 255);
-        ctx.textAlign = 'left';
-
         canvasPhotoDrawn = true;
       }
     } catch (err) {
@@ -1025,141 +1206,195 @@ export async function renderFichaToCanvas(data: FichaData, canvas: HTMLCanvasEle
   }
 
   if (!canvasPhotoDrawn) {
-    ctx.strokeStyle = colors.borderLight;
-    ctx.strokeRect(792, 168, 168, 92);
-    ctx.fillStyle = colors.textMuted;
-    ctx.font = '8px "IBM Plex Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('[ REGISTRO FACIAL ]', 876, 202);
-    ctx.font = '7px "IBM Plex Mono", monospace';
-    ctx.fillText('ARQUIVO DE CAMPO', 876, 214);
+    ctx.fillStyle = colors.paperBase;
+    ctx.fillRect(photoInnerX, photoInnerY, photoInnerW, photoInnerH);
+    ctx.strokeStyle = colors.inkFaint;
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(photoInnerX, photoInnerY, photoInnerW, photoInnerH);
 
-    ctx.fillStyle = colors.borderRed;
-    ctx.fillRect(812, 232, 130, 18);
-    ctx.strokeStyle = colors.redBright;
-    ctx.strokeRect(812, 232, 130, 18);
-    ctx.fillStyle = colors.textPure;
-    ctx.font = 'bold 8.5px "IBM Plex Mono", monospace';
-    ctx.fillText('TRIAGEM OK', 876, 244);
+    ctx.strokeStyle = colors.paperLine;
+    ctx.lineWidth = 0.4;
+    ctx.beginPath();
+    ctx.moveTo(photoInnerX + 8, photoInnerY + 8);
+    ctx.lineTo(photoInnerX + photoInnerW - 8, photoInnerY + photoInnerH - 8);
+    ctx.moveTo(photoInnerX + 8, photoInnerY + photoInnerH - 8);
+    ctx.lineTo(photoInnerX + photoInnerW - 8, photoInnerY + 8);
+    ctx.stroke();
+
+    ctx.fillStyle = colors.inkMuted;
+    ctx.font = 'bold 9px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('[ FOTOGRAFIA NAO ANEXADA ]', photoInnerX + photoInnerW / 2, photoInnerY + 54);
+    ctx.font = '8px "Courier New", monospace';
+    ctx.fillText('Registro visual pendente', photoInnerX + photoInnerW / 2, photoInnerY + 68);
     ctx.textAlign = 'left';
   }
 
-  // ==================== 2. ATRIBUTOS ====================
-  drawSectionHeader(280, "02", "MATRIZ DE ATRIBUTOS PRINCIPAIS (12 PONTOS DISTRIBUIDOS)", "SEC-02 // BIO-METRICA OPERACIONAL");
+  // Cantoneiras triangulares físicas
+  const drawCanvasCornerMount = (cx: number, cy: number, type: 'TL' | 'TR' | 'BL' | 'BR') => {
+    const s = 11;
+    ctx.fillStyle = colors.cornerBracket;
+    if (type === 'TL') {
+      ctx.fillRect(cx, cy, s, 3);
+      ctx.fillRect(cx, cy, 3, s);
+    } else if (type === 'TR') {
+      ctx.fillRect(cx - s, cy, s, 3);
+      ctx.fillRect(cx - 3, cy, 3, s);
+    } else if (type === 'BL') {
+      ctx.fillRect(cx, cy - 3, s, 3);
+      ctx.fillRect(cx, cy - s, 3, s);
+    } else if (type === 'BR') {
+      ctx.fillRect(cx - s, cy - 3, s, 3);
+      ctx.fillRect(cx - 3, cy - s, 3, s);
+    }
+  };
+  drawCanvasCornerMount(photoInnerX, photoInnerY, 'TL');
+  drawCanvasCornerMount(photoInnerX + photoInnerW, photoInnerY, 'TR');
+  drawCanvasCornerMount(photoInnerX, photoInnerY + photoInnerH, 'BL');
+  drawCanvasCornerMount(photoInnerX + photoInnerW, photoInnerY + photoInnerH, 'BR');
+
+  // Clipe metálico de fixação
+  ctx.strokeStyle = colors.paperClip;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(photoInnerX + 16, photoFrameY - 6);
+  ctx.lineTo(photoInnerX + 16, photoFrameY + 18);
+  ctx.moveTo(photoInnerX + 22, photoFrameY - 6);
+  ctx.lineTo(photoInnerX + 22, photoFrameY + 22);
+  ctx.moveTo(photoInnerX + 16, photoFrameY - 6);
+  ctx.lineTo(photoInnerX + 22, photoFrameY - 6);
+  ctx.stroke();
+
+  // Carimbo sobrepondo a foto
+  ctx.save();
+  ctx.translate(photoFrameX + photoFrameW - 95, photoFrameY + photoFrameH - 24);
+  ctx.rotate(-5 * Math.PI / 180);
+  ctx.strokeStyle = colors.stampRed;
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(0, 0, 98, 22);
+  ctx.fillStyle = colors.stampRed;
+  ctx.font = 'bold 8px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('DEAD HOURS', 49, 9);
+  ctx.font = '7px "Courier New", monospace';
+  ctx.fillText('IDENTIFICACAO', 49, 18);
+  ctx.restore();
+  ctx.textAlign = 'left';
+
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = '7.5px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('FOTOGRAFIA ANEXADA', photoFrameX + photoFrameW / 2, photoFrameY + photoFrameH - 4);
+  ctx.textAlign = 'left';
+
+  // ==================== SEÇÃO 2: MATRIZ DE ATRIBUTOS E ESPECIALIZAÇÕES ====================
+  drawSectionTitle(296, "II.", "MATRIZ DE ATRIBUTOS DE APTIDAO (12 PONTOS DISTRIBUIDOS)");
 
   const attrs = [
-    { key: 'forca', name: 'FORCA', tag: '[FOR]', desc: 'Massa & Combate', val: data.forca },
-    { key: 'agilidade', name: 'AGILIDADE', tag: '[AGI]', desc: 'Reflexo & Furtivo', val: data.agilidade },
-    { key: 'vigor', name: 'VIGOR', tag: '[VIG]', desc: 'Saude & Imunidade', val: data.vigor },
-    { key: 'intelecto', name: 'INTELECTO', tag: '[INT]', desc: 'Logica & Reparos', val: data.intelecto },
-    { key: 'percepcao', name: 'PERCEPCAO', tag: '[PER]', desc: 'Atencao & Rastreio', val: data.percepcao },
-    { key: 'presenca', name: 'PRESENCA', tag: '[PRE]', desc: 'Moral & Sangue Frio', val: data.presenca }
+    { key: 'forca', name: 'FORCA', tag: 'FOR', desc: 'Massa & Combate', val: data.forca },
+    { key: 'agilidade', name: 'AGILIDADE', tag: 'AGI', desc: 'Reflexo & Esquiva', val: data.agilidade },
+    { key: 'vigor', name: 'VIGOR', tag: 'VIG', desc: 'Saude & Imunidade', val: data.vigor },
+    { key: 'intelecto', name: 'INTELECTO', tag: 'INT', desc: 'Logica & Reparo', val: data.intelecto },
+    { key: 'percepcao', name: 'PERCEPCAO', tag: 'PER', desc: 'Atencao & Rastreio', val: data.percepcao },
+    { key: 'presenca', name: 'PRESENCA', tag: 'PRE', desc: 'Moral & Sangue Frio', val: data.presenca }
   ];
 
-  const attrWidth = 150;
-  const attrGap = 8.8;
-  const startX = 28;
+  const attrTableX = 44;
+  const attrTableY = 320;
+  const attrTableW = 912;
+  const attrColW = attrTableW / 6;
+  const attrTableH = 92;
+
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(attrTableX, attrTableY, attrTableW, attrTableH);
 
   attrs.forEach((a, i) => {
-    const x = startX + i * (attrWidth + attrGap);
+    const cx = attrTableX + i * attrColW;
     const numVal = parseInt(a.val) || 0;
-    const isHigh = numVal >= 3;
 
-    ctx.fillStyle = colors.card;
-    ctx.fillRect(x, 310, attrWidth, 120);
-    ctx.strokeStyle = isHigh ? colors.borderRed : colors.border;
-    ctx.strokeRect(x, 310, attrWidth, 120);
-
-    ctx.fillStyle = isHigh ? '#241416' : colors.cardHeader;
-    ctx.fillRect(x, 310, attrWidth, 22);
-    ctx.strokeStyle = colors.border;
-    ctx.strokeRect(x, 310, attrWidth, 22);
-    if (isHigh) {
-      ctx.fillStyle = colors.borderRed;
-      ctx.fillRect(x, 330, attrWidth, 2);
+    if (i > 0) {
+      ctx.beginPath();
+      ctx.moveTo(cx, attrTableY);
+      ctx.lineTo(cx, attrTableY + attrTableH);
+      ctx.stroke();
     }
 
-    ctx.fillStyle = isHigh ? colors.textPure : colors.textGold;
-    ctx.font = 'bold 11px "Oswald", sans-serif';
+    ctx.fillStyle = colors.inkPrimary;
+    ctx.font = 'bold 10px "Oswald", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`${a.tag} ${a.name}`, x + attrWidth / 2, 325);
+    ctx.fillText(`${a.name} [${a.tag}]`, cx + attrColW / 2, attrTableY + 14);
 
-    ctx.fillStyle = isHigh ? colors.textPure : colors.textWhite;
-    ctx.font = 'bold 38px "Oswald", "Arial Black", sans-serif';
-    ctx.fillText(a.val || '0', x + attrWidth / 2, 368);
+    ctx.strokeStyle = colors.paperLine;
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(cx + 4, attrTableY + 18);
+    ctx.lineTo(cx + attrColW - 4, attrTableY + 18);
+    ctx.stroke();
 
-    const dotStartX = x + attrWidth / 2 - 18;
-    for (let d = 1; d <= 5; d++) {
-      const dx = dotStartX + (d - 1) * 8;
-      ctx.fillStyle = d <= numVal ? colors.borderRed : '#282828';
-      ctx.fillRect(dx, 384, 5, 5);
-      ctx.strokeStyle = colors.border;
-      ctx.strokeRect(dx, 384, 5, 5);
+    ctx.fillStyle = colors.inkPrimary;
+    ctx.font = 'bold 30px "Oswald", "Arial Black", sans-serif';
+    ctx.fillText(a.val || '0', cx + attrColW / 2, attrTableY + 52);
+
+    const pipsStartX = cx + attrColW / 2 - 20;
+    for (let p = 1; p <= 5; p++) {
+      const px = pipsStartX + (p - 1) * 8.5;
+      const isFilled = p <= numVal;
+      ctx.fillStyle = isFilled ? colors.inkPrimary : colors.paperBase;
+      ctx.fillRect(px, attrTableY + 62, 6, 6);
+      ctx.strokeStyle = colors.inkSecondary;
+      ctx.lineWidth = 0.6;
+      ctx.strokeRect(px, attrTableY + 62, 6, 6);
     }
 
-    ctx.fillStyle = colors.cardAlt;
-    ctx.fillRect(x, 404, attrWidth, 26);
-    ctx.strokeStyle = colors.border;
-    ctx.strokeRect(x, 404, attrWidth, 26);
+    ctx.strokeStyle = colors.paperLine;
+    ctx.lineWidth = 0.4;
+    ctx.beginPath();
+    ctx.moveTo(cx + 4, attrTableY + 74);
+    ctx.lineTo(cx + attrColW - 4, attrTableY + 74);
+    ctx.stroke();
 
-    ctx.fillStyle = colors.textMuted;
-    ctx.font = '7.5px "IBM Plex Mono", monospace';
-    ctx.fillText(a.desc, x + attrWidth / 2, 420);
+    ctx.fillStyle = colors.inkMuted;
+    ctx.font = '7.5px "Courier New", monospace';
+    ctx.fillText(a.desc, cx + attrColW / 2, attrTableY + 84);
     ctx.textAlign = 'left';
   });
 
-  // Especializações Strip
-  ctx.fillStyle = colors.card;
-  ctx.fillRect(28, 438, 944, 34);
-  ctx.strokeStyle = colors.border;
-  ctx.strokeRect(28, 438, 944, 34);
+  // Especializações
+  const specY = 422;
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = 'bold 9.5px "Courier New", monospace';
+  ctx.fillText('ESPECIALIZACOES TECNICAS (+2 DE BONUS):', 44, specY + 14);
 
-  ctx.fillStyle = colors.textGold;
-  ctx.font = 'bold 12px "Oswald", sans-serif';
-  ctx.fillText('ESPECIALIZACOES (+2):', 38, 459);
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.fillText('1.', 260, specY + 14);
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(276, specY + 16);
+  ctx.lineTo(570, specY + 16);
+  ctx.stroke();
 
-  ctx.fillStyle = colors.cardHeader;
-  ctx.fillRect(215, 442, 355, 26);
-  ctx.strokeStyle = colors.borderRed;
-  ctx.strokeRect(215, 442, 355, 26);
-  ctx.fillStyle = colors.borderRed;
-  ctx.fillRect(215, 442, 3, 26);
+  ctx.font = 'bold 10px "Courier New", monospace';
+  ctx.fillText(data.esp1 || '—', 282, specY + 13);
+  ctx.fillStyle = colors.stampRed;
+  ctx.fillText('(+2)', 576, specY + 14);
 
-  ctx.fillStyle = colors.textWhite;
-  ctx.font = 'bold 10px "IBM Plex Mono", monospace';
-  ctx.fillText(data.esp1 || '—', 226, 458);
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.font = 'bold 9.5px "Courier New", monospace';
+  ctx.fillText('2.', 620, specY + 14);
+  ctx.beginPath();
+  ctx.moveTo(636, specY + 16);
+  ctx.lineTo(915, specY + 16);
+  ctx.stroke();
 
-  ctx.fillStyle = colors.redDark;
-  ctx.fillRect(510, 445, 52, 20);
-  ctx.strokeStyle = colors.borderRed;
-  ctx.strokeRect(510, 445, 52, 20);
-  ctx.fillStyle = colors.redBright;
-  ctx.textAlign = 'center';
-  ctx.fillText('+2 [INT]', 536, 459);
+  ctx.font = 'bold 10px "Courier New", monospace';
+  ctx.fillText(data.esp2 || '—', 642, specY + 13);
+  ctx.fillStyle = colors.stampRed;
+  ctx.fillText('(+2)', 922, specY + 14);
 
-  ctx.textAlign = 'left';
-  ctx.fillStyle = colors.cardHeader;
-  ctx.fillRect(582, 442, 380, 26);
-  ctx.strokeStyle = colors.borderRed;
-  ctx.strokeRect(582, 442, 380, 26);
-  ctx.fillStyle = colors.borderRed;
-  ctx.fillRect(582, 442, 3, 26);
-
-  ctx.fillStyle = colors.textWhite;
-  ctx.font = 'bold 10px "IBM Plex Mono", monospace';
-  ctx.fillText(data.esp2 || '—', 593, 458);
-
-  ctx.fillStyle = colors.redDark;
-  ctx.fillRect(902, 445, 52, 20);
-  ctx.strokeStyle = colors.borderRed;
-  ctx.strokeRect(902, 445, 52, 20);
-  ctx.fillStyle = colors.redBright;
-  ctx.textAlign = 'center';
-  ctx.fillText('+2 [FOR]', 928, 459);
-  ctx.textAlign = 'left';
-
-  // ==================== 3. MONITORES VITAIS ====================
-  drawSectionHeader(484, "03", "MONITORES VITAIS & PARAMETROS OPERACIONAIS", "SEC-03 // STATUS DE COMBATE");
+  // ==================== SEÇÃO 3: CONDIÇÃO OPERACIONAL E LIMITES FÍSICOS ====================
+  drawSectionTitle(450, "III.", "CONDICAO OPERACIONAL E PARAMETROS DE COMBATE");
 
   const numVig = parseInt(data.vigor) || 0;
   const numAgi = parseInt(data.agilidade) || 0;
@@ -1167,285 +1402,350 @@ export async function renderFichaToCanvas(data: FichaData, canvas: HTMLCanvasEle
   const vidaCalc = 10 + numVig * 2;
   const folegoCalc = 5 + numVig;
   const defesaCalc = 10 + numAgi;
-  const cargaCalc = 5 + numFor;
+  // FÓRMULA OFICIAL DE CARGA: 10 + 2 × For
+  const cargaCalc = 10 + numFor * 2;
 
   const vitals = [
-    { title: "PONTOS DE VIDA", formula: "10 + (VIG x 2)", val: `${vidaCalc} PV`, color: colors.life, sub: "INTEGRIDADE", total: 16, filled: Math.min(vidaCalc, 16) },
-    { title: "PONTOS DE FOLEGO", formula: "5 + VIG", val: `${folegoCalc} PF`, color: colors.stamina, sub: "RESISTENCIA", total: 8, filled: Math.min(folegoCalc, 8) },
-    { title: "DEFESA PASSIVA", formula: "10 + AGI", val: `${defesaCalc} DEF`, color: colors.defense, sub: "ESQUIVA BASE", total: 8, filled: Math.min(defesaCalc - 8, 8) },
-    { title: "CAPACIDADE CARGA", formula: "5 + FOR", val: `${cargaCalc} SLOTS`, color: colors.cargo, sub: "LIMITE DE PESO", total: 8, filled: Math.min(cargaCalc, 8) }
+    { title: "PONTOS DE VIDA (PV)", formula: "10 + (2 x VIG)", val: `${vidaCalc} PV`, totalDots: 16, fillDots: Math.min(vidaCalc, 16), sub: "Integridade Fisica" },
+    { title: "PONTOS DE FOLEGO (PF)", formula: "5 + VIG", val: `${folegoCalc} PF`, totalDots: 8, fillDots: Math.min(folegoCalc, 8), sub: "Resistencia e Folego" },
+    { title: "DEFESA PASSIVA (DEF)", formula: "10 + AGI", val: `${defesaCalc} DEF`, totalDots: 8, fillDots: Math.min(defesaCalc - 8, 8), sub: "Esquiva e Protecao Base" },
+    { title: "CAPACIDADE DE CARGA", formula: "10 + (2 x FOR)", val: `${cargaCalc} SLOTS`, totalDots: 8, fillDots: Math.min(cargaCalc, 8), sub: "Limite de Peso e Transporte" }
   ];
 
-  const vitWidth = 227;
-  const vitGap = 12;
+  const vitX = 44;
+  const vitY = 474;
+  const vitW = 912;
+  const vitColW = (vitW - 30) / 4;
+  const vitGap = 10;
+  const vitH = 104;
 
   vitals.forEach((v, i) => {
-    const x = 28 + i * (vitWidth + vitGap);
+    const vx = vitX + i * (vitColW + vitGap);
 
-    ctx.fillStyle = colors.card;
-    ctx.fillRect(x, 514, vitWidth, 108);
-    ctx.strokeStyle = colors.border;
-    ctx.strokeRect(x, 514, vitWidth, 108);
+    ctx.strokeStyle = colors.inkSecondary;
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(vx, vitY, vitColW, vitH);
 
-    ctx.fillStyle = v.color;
-    ctx.fillRect(x, 514, 5, 108);
+    ctx.fillStyle = colors.inkPrimary;
+    ctx.font = 'bold 9.5px "Oswald", sans-serif';
+    ctx.fillText(v.title, vx + 10, vitY + 14);
 
-    ctx.fillStyle = colors.textMuted;
-    ctx.font = '8.5px "IBM Plex Mono", monospace';
-    ctx.fillText(v.title, x + 12, 528);
-    ctx.fillStyle = colors.textGold;
-    ctx.font = '7.5px "IBM Plex Mono", monospace';
-    ctx.fillText(v.formula, x + 135, 528);
+    ctx.fillStyle = colors.inkMuted;
+    ctx.font = 'bold 8.5px "Courier New", monospace';
+    ctx.fillText(v.formula, vx + 10, vitY + 24);
 
-    ctx.strokeStyle = colors.border;
+    ctx.strokeStyle = colors.paperLine;
+    ctx.lineWidth = 0.5;
     ctx.beginPath();
-    ctx.moveTo(x + 12, 534);
-    ctx.lineTo(x + vitWidth - 10, 534);
+    ctx.moveTo(vx + 8, vitY + 28);
+    ctx.lineTo(vx + vitColW - 8, vitY + 28);
     ctx.stroke();
 
-    ctx.fillStyle = colors.textPure;
-    ctx.font = 'bold 28px "Oswald", "Arial Black", sans-serif';
-    ctx.fillText(v.val, x + 12, 565);
+    ctx.fillStyle = colors.inkPrimary;
+    ctx.font = 'bold 22px "Oswald", "Arial Black", sans-serif';
+    ctx.fillText(v.val, vx + 10, vitY + 52);
 
-    ctx.fillStyle = colors.textMuted;
-    ctx.font = '7.5px "IBM Plex Mono", monospace';
-    ctx.fillText(v.sub, x + 125, 560);
+    ctx.fillStyle = colors.inkMuted;
+    ctx.font = '7.5px "Courier New", monospace';
+    ctx.fillText(v.sub, vx + 10, vitY + 66);
 
-    const boxX = x + 12;
-    const boxY = 578;
-    const boxW = vitWidth - 22;
-    const boxH = 34;
-
-    ctx.fillStyle = colors.input;
-    ctx.fillRect(boxX, boxY, boxW, boxH);
-    ctx.strokeStyle = colors.border;
+    const boxX = vx + 8;
+    const boxY = vitY + 72;
+    const boxW = vitColW - 16;
+    const boxH = 24;
+    ctx.strokeStyle = colors.paperLine;
+    ctx.lineWidth = 0.5;
     ctx.strokeRect(boxX, boxY, boxW, boxH);
 
-    const pipW = 18;
-    const pipH = 10;
-    const pipGap = 6;
-    for (let p = 0; p < v.total; p++) {
+    const pipW = 16;
+    const pipH = 8;
+    const pipGapX = 6;
+    for (let p = 0; p < v.totalDots; p++) {
       const row = Math.floor(p / 8);
       const col = p % 8;
-      const px = boxX + 6 + col * (pipW + pipGap);
-      const py = boxY + 6 + row * (pipH + 3);
-
-      ctx.fillStyle = p < v.filled ? v.color : '#252525';
-      ctx.fillRect(px, py, pipW, pipH);
-      ctx.strokeStyle = colors.border;
-      ctx.strokeRect(px, py, pipW, pipH);
+      const px = boxX + 6 + col * (pipW + pipGapX);
+      const pyBox = boxY + 3 + row * (pipH + 2.5);
+      const isFilled = p < v.fillDots;
+      ctx.fillStyle = isFilled ? colors.inkSecondary : colors.paperBase;
+      ctx.fillRect(px, pyBox, pipW, pipH);
+      ctx.strokeStyle = colors.inkFaint;
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(px, pyBox, pipW, pipH);
     }
   });
 
-  // ==================== 4. PERFIL FÍSICO & PSICOLÓGICO ====================
-  drawSectionHeader(634, "04", "PERFIL FISICO & PSICOLOGICO", "SEC-04 // AVALIACAO DESCRITIVA");
+  // ==================== SEÇÃO 4: LAUDO DESCRITIVO E PERFIL COMPORTAMENTAL ====================
+  drawSectionTitle(590, "IV.", "LAUDO DESCRITIVO E PERFIL DO INDIVIDUO");
 
-  const colW = 466;
+  const descColW = 448;
+  const descY = 614;
+  const descH = 126;
 
-  // Aparência
-  ctx.fillStyle = colors.card;
-  ctx.fillRect(28, 664, colW, 135);
-  ctx.strokeStyle = colors.border;
-  ctx.strokeRect(28, 664, colW, 135);
+  // Aparência Física
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(44, descY, descColW, descH);
 
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '8.5px "IBM Plex Mono", monospace';
-  ctx.fillText('APARENCIA FISICA & MARCAS DISTINTIVAS:', 38, 680);
-  ctx.fillText('IDENTIFICACAO VISUAL', 360, 680);
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.font = 'bold 9.5px "Oswald", sans-serif';
+  ctx.fillText('APARENCIA FISICA E SINAIS DISTINTIVOS', 54, descY + 14);
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = '8px "Courier New", monospace';
+  ctx.fillText('(Constituicao, cicatrizes, vestimentas e marcas visuais)', 54, descY + 24);
 
-  ctx.strokeStyle = colors.border;
+  ctx.strokeStyle = colors.paperLine;
+  ctx.lineWidth = 0.5;
   ctx.beginPath();
-  ctx.moveTo(38, 686);
-  ctx.lineTo(484, 686);
+  ctx.moveTo(54, descY + 28);
+  ctx.lineTo(44 + descColW - 10, descY + 28);
   ctx.stroke();
 
-  ctx.fillStyle = colors.textGold;
-  ctx.font = '11px "Inter", sans-serif';
-  drawCanvasMultiline(ctx, data.aparencia, 38, 704, colW - 20, 16, 5);
+  for (let l = 1; l <= 4; l++) {
+    ctx.beginPath();
+    ctx.moveTo(54, descY + 28 + l * 20);
+    ctx.lineTo(44 + descColW - 10, descY + 28 + l * 20);
+    ctx.stroke();
+  }
 
-  // Personalidade
-  ctx.fillStyle = colors.card;
-  ctx.fillRect(506, 664, colW, 135);
-  ctx.strokeStyle = colors.border;
-  ctx.strokeRect(506, 664, colW, 135);
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.font = '10px "Courier New", monospace';
+  drawCanvasMultiline(ctx, data.aparencia, 54, descY + 42, descColW - 20, 18, 5);
 
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '8.5px "IBM Plex Mono", monospace';
-  ctx.fillText('PERSONALIDADE & CONDUTA SOB PRESSAO:', 516, 680);
-  ctx.fillText('ESTABILIDADE COGNITIVA', 825, 680);
+  // Perfil Psicológico
+  const col2X = 508;
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(col2X, descY, descColW, descH);
 
-  ctx.strokeStyle = colors.border;
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.font = 'bold 9.5px "Oswald", sans-serif';
+  ctx.fillText('PERFIL PSICOLOGICO E CONDUTA SOB ESTRESSE', col2X + 10, descY + 14);
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = '8px "Courier New", monospace';
+  ctx.fillText('(Temperamento, reacoes ao perigo e estabilidade mental)', col2X + 10, descY + 24);
+
+  ctx.strokeStyle = colors.paperLine;
+  ctx.lineWidth = 0.5;
   ctx.beginPath();
-  ctx.moveTo(516, 686);
-  ctx.lineTo(962, 686);
+  ctx.moveTo(col2X + 10, descY + 28);
+  ctx.lineTo(col2X + descColW - 10, descY + 28);
   ctx.stroke();
 
-  ctx.fillStyle = colors.textGold;
-  ctx.font = '11px "Inter", sans-serif';
-  drawCanvasMultiline(ctx, data.personalidade, 516, 704, colW - 20, 16, 5);
+  for (let l = 1; l <= 4; l++) {
+    ctx.beginPath();
+    ctx.moveTo(col2X + 10, descY + 28 + l * 20);
+    ctx.lineTo(col2X + descColW - 10, descY + 28 + l * 20);
+    ctx.stroke();
+  }
 
-  // ==================== 5. HISTÓRICO & ÂNCORAS NARRATIVAS ====================
-  drawSectionHeader(811, "05", "HISTORICO & ANCORAS NARRATIVAS", "SEC-05 // MOTIVACOES & TRAUMAS");
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.font = '10px "Courier New", monospace';
+  drawCanvasMultiline(ctx, data.personalidade, col2X + 10, descY + 42, descColW - 20, 18, 5);
+
+  // ==================== SEÇÃO 5: ÂNCORAS NARRATIVAS E MOTIVAÇÕES ====================
+  drawSectionTitle(752, "V.", "ANCORAS NARRATIVAS E ANTECEDENTES");
+
+  const ancY1 = 776;
+  const ancY2 = 840;
+  const ancH = 56;
 
   const anchors = [
-    { label: "OBJETIVO PESSOAL:", val: data.objetivo, x: 28, y: 841 },
-    { label: "MAIOR MEDO:", val: data.medo, x: 506, y: 841 },
-    { label: "LIGACAO COM SOBREVIVENTE:", val: data.ligacao, x: 28, y: 917 },
-    { label: "SEGREDO OU CONFLITO:", val: data.segredo, x: 506, y: 917 }
+    { label: "OBJETIVO PESSOAL:", val: data.objetivo, x: 44, y: ancY1 },
+    { label: "MAIOR MEDO OU VULNERABILIDADE:", val: data.medo, x: 508, y: ancY1 },
+    { label: "LIGACAO COM OUTRO SOBREVIVENTE:", val: data.ligacao, x: 44, y: ancY2 },
+    { label: "SEGREDO OU PONTO DE CONFLITO:", val: data.segredo, x: 508, y: ancY2 }
   ];
 
   anchors.forEach((anc) => {
-    ctx.fillStyle = colors.card;
-    ctx.fillRect(anc.x, anc.y, colW, 68);
-    ctx.strokeStyle = colors.border;
-    ctx.strokeRect(anc.x, anc.y, colW, 68);
+    ctx.strokeStyle = colors.inkSecondary;
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(anc.x, anc.y, descColW, ancH);
 
-    ctx.fillStyle = colors.redBright;
-    ctx.font = 'bold 8.5px "IBM Plex Mono", monospace';
-    ctx.fillText(anc.label, anc.x + 10, anc.y + 16);
+    ctx.fillStyle = colors.inkPrimary;
+    ctx.font = 'bold 9px "Courier New", monospace';
+    ctx.fillText(anc.label, anc.x + 10, anc.y + 12);
 
-    ctx.fillStyle = colors.textWhite;
-    ctx.font = '10.5px "Inter", sans-serif';
-    drawCanvasMultiline(ctx, anc.val, anc.x + 10, anc.y + 32, colW - 20, 15, 2);
+    ctx.strokeStyle = colors.paperLine;
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(anc.x + 10, anc.y + 15);
+    ctx.lineTo(anc.x + descColW - 10, anc.y + 15);
+    ctx.stroke();
+
+    ctx.fillStyle = colors.inkPrimary;
+    ctx.font = '10px "Courier New", monospace';
+    drawCanvasMultiline(ctx, anc.val, anc.x + 10, anc.y + 28, descColW - 20, 14, 2);
   });
 
-  // ==================== 6. MANIFESTO DE CARGA & EQUIPAMENTO ====================
-  drawSectionHeader(997, "06", "MANIFESTO DE CARGA & EQUIPAMENTO INICIAL", "SEC-06 // LOGISTICA DE SOBREVIVENCIA");
+  // ==================== SEÇÃO 6: MANIFESTO DE CARGA E EQUIPAMENTO ====================
+  drawSectionTitle(908, "VI.", "MANIFESTO DE EQUIPAMENTO E CARGA INICIAL");
+
+  const eqY = 932;
+  const eqW1 = 295;
+  const eqW2 = 295;
+  const eqW3 = 302;
+  const eqH = 90;
 
   const invItems = [
-    { label: "ARMA PRINCIPAL:", slot: "SLOT 1", val: data.arma, note: "Condicao: Robusta | Peso: 1 slot", x: 28, w: 290 },
-    { label: "FERRAMENTA DE CAMPO:", slot: "SLOT 2", val: data.ferramenta, note: "Condicao: Operacional | Iluminacao 10m", x: 330, w: 290 },
-    { label: "OUTROS ITENS & MANTIMENTOS:", slot: "SLOTS 3-4", val: data.outrosItens, note: "Slots Ocupados: 4 / 8 Capacidade Maxima", x: 632, w: 340 }
+    { label: "ARMA PRINCIPAL [SLOT 1]", val: data.arma, note: "Armamento de porte imediato", x: 44, w: eqW1 },
+    { label: "FERRAMENTA DE CAMPO [SLOT 2]", val: data.ferramenta, note: "Utilitario e iluminacao", x: 349, w: eqW2 },
+    { label: "OUTROS ITENS E PROVISOES [SLOTS 3-4]", val: data.outrosItens, note: "Mochila e mantimentos adicionais", x: 654, w: eqW3 }
   ];
 
   invItems.forEach((item) => {
-    ctx.fillStyle = colors.card;
-    ctx.fillRect(item.x, 1027, item.w, 88);
-    ctx.strokeStyle = colors.border;
-    ctx.strokeRect(item.x, 1027, item.w, 88);
+    ctx.strokeStyle = colors.inkSecondary;
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(item.x, eqY, item.w, eqH);
 
-    ctx.fillStyle = colors.textMuted;
-    ctx.font = '8px "IBM Plex Mono", monospace';
-    ctx.fillText(item.label, item.x + 10, 1042);
-    ctx.fillStyle = colors.textGold;
-    ctx.fillText(item.slot, item.x + item.w - 75, 1042);
+    ctx.fillStyle = colors.inkPrimary;
+    ctx.font = 'bold 9px "Courier New", monospace';
+    ctx.fillText(item.label, item.x + 10, eqY + 14);
 
-    ctx.fillStyle = colors.input;
-    ctx.fillRect(item.x + 10, 1048, item.w - 20, 38);
-    ctx.strokeStyle = colors.border;
-    ctx.strokeRect(item.x + 10, 1048, item.w - 20, 38);
+    ctx.strokeStyle = colors.paperLine;
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(item.x + 8, eqY + 18);
+    ctx.lineTo(item.x + item.w - 8, eqY + 18);
+    ctx.stroke();
 
-    ctx.fillStyle = colors.borderRed;
-    ctx.fillRect(item.x + 10, 1048, 3, 38);
+    ctx.fillStyle = colors.inkPrimary;
+    ctx.font = 'bold 10px "Courier New", monospace';
+    drawCanvasMultiline(ctx, item.val || '—', item.x + 10, eqY + 34, item.w - 20, 16, 2);
 
-    ctx.fillStyle = colors.textWhite;
-    ctx.font = 'bold 10px "IBM Plex Mono", monospace';
-    ctx.fillText(item.val || '—', item.x + 16, 1066);
-
-    ctx.fillStyle = colors.textMuted;
-    ctx.font = '7px "IBM Plex Mono", monospace';
-    ctx.fillText(item.note, item.x + 16, 1080);
+    ctx.fillStyle = colors.inkMuted;
+    ctx.font = '7.5px "Courier New", monospace';
+    ctx.fillText(item.note, item.x + 10, eqY + 80);
   });
 
-  // ==================== 7. DECLARAÇÃO LEGAL & ASSINATURA ====================
-  drawSectionHeader(1127, "07", "DECLARACAO LEGAL & AUTENTICACAO DE CAMPO", "SEC-07 // HOMOLOGACAO");
+  // ==================== SEÇÃO 7: TERMO DE RESPONSABILIDADE E AUTENTICAÇÃO ====================
+  drawSectionTitle(1034, "VII.", "TERMO DE CIENCIA E AUTENTICACAO DE REGISTRO");
 
-  ctx.fillStyle = colors.cardAlt;
-  ctx.fillRect(28, 1157, 944, 215);
-  ctx.strokeStyle = colors.border;
-  ctx.strokeRect(28, 1157, 944, 215);
+  const signY = 1058;
+  const signH = 196;
 
-  ctx.fillStyle = colors.input;
-  ctx.fillRect(38, 1167, 924, 56);
-  ctx.strokeStyle = colors.borderLight;
-  ctx.strokeRect(38, 1167, 924, 56);
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(44, signY, 912, signH);
 
-  // Checkbox
-  ctx.fillStyle = data.declaracaoLida ? colors.borderRed : colors.card;
-  ctx.fillRect(48, 1177, 16, 16);
-  ctx.strokeStyle = data.declaracaoLida ? colors.redBright : colors.border;
-  ctx.strokeRect(48, 1177, 16, 16);
+  // Termo de Declaração de Ciência e Regras
+  ctx.fillStyle = data.declaracaoLida ? colors.stampRed : colors.paperBase;
+  ctx.fillRect(56, signY + 16, 14, 14);
+  ctx.strokeStyle = colors.stampRed;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(56, signY + 16, 14, 14);
 
   if (data.declaracaoLida) {
-    ctx.fillStyle = colors.textPure;
-    ctx.font = 'bold 11px "IBM Plex Mono", monospace';
+    ctx.fillStyle = colors.paperBase;
+    ctx.font = 'bold 11px "Courier New", monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('X', 56, 1189.5);
+    ctx.fillText('X', 63, signY + 27);
     ctx.textAlign = 'left';
   }
 
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '8.5px "IBM Plex Mono", monospace';
-  ctx.fillText('DECLARACAO DE CIENCIA E REGRAS: Confirmo que li e aceito as regras de sobrevivencia, combate,', 74, 1182);
-  ctx.fillText('ausencia, infeccao bacteriana e morte permanente (Permadeath) de DEAD HOURS. Estou ciente de', 74, 1195);
-  ctx.fillText('que cada decisao no ermo e irrevogavel e que a arbitragem dos mestres no WhatsApp e soberana.', 74, 1208);
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.font = 'bold 9px "Courier New", monospace';
+  ctx.fillText('DECLARACAO FORMAL: Confirmo ter lido e aceito integralmente as regras de sobrevivencia, combate,', 78, signY + 20);
+  ctx.fillStyle = colors.inkSecondary;
+  ctx.font = '9px "Courier New", monospace';
+  ctx.fillText('ausencia, infeccao bacteriana e morte permanente (Permadeath) de DEAD HOURS. Estou ciente de', 78, signY + 32);
+  ctx.fillText('que cada decisao tomada no ermo e irrevogavel e que a arbitragem dos mestres no WhatsApp e soberana.', 78, signY + 44);
 
-  ctx.strokeStyle = colors.border;
+  ctx.strokeStyle = colors.paperLine;
+  ctx.lineWidth = 0.6;
   ctx.beginPath();
-  ctx.moveTo(38, 1234);
-  ctx.lineTo(962, 1234);
+  ctx.moveTo(54, signY + 62);
+  ctx.lineTo(946, signY + 62);
   ctx.stroke();
 
   // Assinatura
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = 'bold 9px "Courier New", monospace';
+  ctx.fillText('ASSINATURA FORMAL DO SOBREVIVENTE:', 56, signY + 80);
+
   if (data.assinatura) {
-    ctx.fillStyle = colors.textPure;
-    ctx.font = 'italic 26px "Caveat", "Brush Script MT", "Georgia", cursive';
-    ctx.fillText(data.assinatura, 60, 1284);
+    ctx.fillStyle = colors.inkPrimary;
+    ctx.font = 'italic 26px "Caveat", "Brush Script MT", "Times New Roman", cursive';
+    ctx.fillText(data.assinatura, 66, signY + 116);
   }
-  ctx.strokeStyle = colors.borderLight;
+
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(50, 1294);
-  ctx.lineTo(380, 1294);
+  ctx.moveTo(56, signY + 124);
+  ctx.lineTo(366, signY + 124);
   ctx.stroke();
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '8px "IBM Plex Mono", monospace';
+
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = '8px "Courier New", monospace';
   ctx.textAlign = 'center';
-  ctx.fillText('ASSINATURA FORMAL DO SOBREVIVENTE', 215, 1308);
+  ctx.fillText('Assinatura do Sobrevivente / Jogador', 211, signY + 136);
 
   // Data
-  ctx.fillStyle = colors.textPure;
-  ctx.font = 'bold 12px "IBM Plex Mono", monospace';
-  ctx.fillText(data.data || new Date().toLocaleDateString('pt-BR'), 480, 1284);
-  ctx.strokeStyle = colors.borderLight;
+  ctx.textAlign = 'left';
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = 'bold 9px "Courier New", monospace';
+  ctx.fillText('DATA DE REGISTRO:', 396, signY + 80);
+
+  ctx.fillStyle = colors.inkPrimary;
+  ctx.font = 'bold 12px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(data.data || new Date().toLocaleDateString('pt-BR'), 466, signY + 116);
+
   ctx.beginPath();
-  ctx.moveTo(410, 1294);
-  ctx.lineTo(550, 1294);
+  ctx.moveTo(396, signY + 124);
+  ctx.lineTo(536, signY + 124);
   ctx.stroke();
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '8px "IBM Plex Mono", monospace';
-  ctx.fillText('DATA DE REGISTRO OFICIAL', 480, 1308);
+
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = '8px "Courier New", monospace';
+  ctx.fillText('Data de Expedicao Oficial', 466, signY + 136);
   ctx.textAlign = 'left';
 
-  // Carimbo Oficial Militar
+  // Carimbo Oficial Vintage de Homologação
   ctx.save();
-  ctx.translate(650, 1254);
-  ctx.rotate(-3 * Math.PI / 180);
-  ctx.fillStyle = 'rgba(120, 29, 36, 0.25)';
-  ctx.fillRect(0, 0, 270, 48);
-  ctx.strokeStyle = colors.borderRed;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(0, 0, 270, 48);
+  ctx.translate(570, signY + 76);
+  ctx.rotate(-4 * Math.PI / 180);
 
-  ctx.fillStyle = colors.redBright;
-  ctx.font = 'bold 12px "Oswald", "Arial Black", sans-serif';
+  ctx.strokeStyle = colors.stampRed;
+  ctx.lineWidth = 1.8;
+  ctx.strokeRect(0, 0, 360, 56);
+  ctx.lineWidth = 0.6;
+  ctx.strokeRect(3, 3, 354, 50);
+
+  ctx.fillStyle = colors.stampRed;
+  ctx.font = 'bold 10px "Courier New", monospace';
   ctx.textAlign = 'center';
-  ctx.fillText('SOBREVIVENTE HOMOLOGADO', 135, 18);
+  ctx.fillText('DEAD HOURS', 180, 16);
 
-  ctx.fillStyle = colors.textGold;
-  ctx.font = 'bold 8.5px "IBM Plex Mono", monospace';
-  ctx.fillText('POSTO DE TRIAGEM // APTO AO ERMO', 135, 32);
+  ctx.fillStyle = colors.stampRedDark;
+  ctx.font = 'bold 14px "Oswald", "Arial Black", sans-serif';
+  ctx.fillText('* SOBREVIVENTE REGISTRADO *', 180, 32);
 
-  ctx.fillStyle = colors.textWhite;
-  ctx.font = '7.5px "IBM Plex Mono", monospace';
-  ctx.fillText('REGISTRO PERMANENTE // SECTOR Z-01', 135, 43);
+  ctx.fillStyle = colors.stampRed;
+  ctx.font = 'bold 8.5px "Courier New", monospace';
+  ctx.fillText('ARQUIVO DE SOBREVIVENCIA // HOMOLOGACAO', 180, 45);
   ctx.restore();
+  ctx.textAlign = 'left';
+
+  // ==================== RODAPÉ DO DOCUMENTO ====================
+  ctx.strokeStyle = colors.inkSecondary;
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(44, 1360);
+  ctx.lineTo(956, 1360);
+  ctx.stroke();
+
+  ctx.fillStyle = colors.inkMuted;
+  ctx.font = '8px "Courier New", monospace';
+  ctx.fillText('DEAD HOURS RPG // PRONTUARIO DE SOBREVIVENTE // ARQUIVO HISTORICO RECUPERADO', 44, 1374);
+  ctx.fillText('DOCUMENTACAO OFICIAL // FORMULARIO 104-DH // PAGINA 1 DE 1', 580, 1374);
 
   ctx.restore();
 }
 
 /**
  * Dispara o download da ficha preenchida em formato de imagem PNG de alta resolução
- * compartilhando exatamente o mesmo design e estrutura visual do PDF.
+ * compartilhando exatamente o mesmo design, proporção e estrutura física do PDF.
  */
 export async function downloadFichaPNG(data: FichaData): Promise<void> {
   const canvas = document.createElement('canvas');
@@ -1499,18 +1799,18 @@ export function formatFichaForClipboard(data: FichaData): string {
   const vida = 10 + vVig * 2;
   const folego = 5 + vVig;
   const defesa = 10 + vAgi;
-  const carga = 5 + vForca;
+  const carga = 10 + vForca * 2;
 
   return `━━━━━━━━━━━━━━━━━━━━
 DEAD HOURS
-CADASTRO DE SOBREVIVENTE
+PRONTUÁRIO DE SOBREVIVENTE
 ━━━━━━━━━━━━━━━━━━━━
 
 IDENTIFICAÇÃO
 Nome do jogador: ${data.nomeJogador || '—'}
 Nome do personagem: ${data.nomePersonagem || '—'}
 Idade: ${data.idade || '—'}
-Fotografia: ${data.foto ? 'HOMOLOGADA // BIOMETRIA DE CAMPO VINCULADA' : 'NÃO ANEXADA'}
+Fotografia: ${data.foto ? 'ANEXADA AO PRONTUÁRIO' : 'NÃO ANEXADA'}
 Aparência física: ${data.aparencia || '—'}
 Personalidade: ${data.personalidade || '—'}
 Ocupação anterior ao apocalipse: ${data.ocupacao || '—'}
@@ -1542,7 +1842,7 @@ Ferramenta: ${data.ferramenta || '—'}
 Outros itens: ${data.outrosItens || '—'}
 
 DECLARAÇÃO
-Confirmo que li as regras de sobrevivência, combate, ausência e morte permanente de DEAD HOURS.
+Confirmo ter lido e aceito as regras de sobrevivência, combate, ausência e morte permanente de DEAD HOURS.
 [${data.declaracaoLida ? 'X' : ' '}] Confirmação de Leitura
 Assinatura: ${data.assinatura || '—'}
 Data de Registro: ${data.data || '—'}
