@@ -123,6 +123,128 @@ body {
   text-transform: uppercase;
 }
 
+.stamp-confidential {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 2px solid #781D24;
+  background: rgba(120, 29, 36, 0.25);
+  color: #FF5A65;
+  padding: 0.25rem 0.75rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  box-shadow: 0 0 12px rgba(120, 29, 36, 0.3);
+}
+
+.stamp-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px dashed #8C6D23;
+  background: rgba(140, 109, 35, 0.2);
+  color: #E6C875;
+  padding: 0.2rem 0.6rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Diegetic Terminal & Dossier Containers */
+.terminal-window {
+  background: #111111;
+  border: 1px solid #2B2B2B;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+.terminal-header {
+  background: linear-gradient(90deg, #1A1A1A 0%, #121212 100%);
+  border-bottom: 1px solid #2B2B2B;
+  padding: 0.5rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: #77736C;
+  letter-spacing: 0.08em;
+}
+
+.terminal-header-title {
+  color: #E3DED3;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Tactical chamfer cut corner */
+.chamfer-corner {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+
+.chamfer-card {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+}
+
+/* Risk Level Badges */
+.badge-risk-low {
+  background: rgba(63, 94, 70, 0.3);
+  border: 1px solid #3F5E46;
+  color: #74B583;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.badge-risk-medium {
+  background: rgba(140, 109, 35, 0.3);
+  border: 1px solid #8C6D23;
+  color: #E6C875;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.badge-risk-high {
+  background: rgba(120, 29, 36, 0.3);
+  border: 1px solid #781D24;
+  color: #FF6B75;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.badge-risk-extreme {
+  background: rgba(163, 35, 44, 0.4);
+  border: 1px solid #A3232C;
+  color: #FFFFFF;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 10px rgba(163, 35, 44, 0.5);
+}
+
 /* Rule Block */
 .rule-card {
   background-color: #151515;

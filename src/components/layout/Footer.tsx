@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Skull, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Skull, AlertTriangle, ShieldCheck, Database, Radio } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -18,72 +18,78 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-xs text-[#77736C] leading-relaxed">
-              Manual digital e arquivo oficial dos sobreviventes do RPG persistente de sobrevivência zumbi via WhatsApp.
+              Manual digital, arquivo de sobrevivência e gerador oficial de fichas do RPG persistente via WhatsApp.
             </p>
-            <div className="font-mono-tech text-[10px] text-[#C3BBA9] border-l-2 border-[#781D24] pl-2">
-              VERSÃO DE CAMPO // EDIÇÃO 1.0<br />
-              SISTEMA PERSISTENTE HOMOLOGADO
+            <div className="font-mono-tech text-[10px] text-[#C3BBA9] border-l-2 border-[#781D24] pl-2 space-y-0.5">
+              <div>VERSÃO DE CAMPO // EDIÇÃO 1.0</div>
+              <div>SISTEMA PERSISTENTE HOMOLOGADO</div>
+              <div className="text-[#AA2830] font-bold">RETRANSMISSÃO: FREQ. 142.8 MHz</div>
             </div>
           </div>
 
           {/* Core Navigation */}
           <div>
             <h4 className="font-title text-sm text-[#E3DED3] tracking-wider uppercase mb-3 border-b border-[#252525] pb-1">
-              Navegação
+              Terminal
             </h4>
             <ul className="space-y-2 text-xs font-mono-tech">
               <li>
                 <Link href="/" className="hover:text-[#E3DED3] transition-colors">
-                  &gt; Início
+                  &gt; Início / Terminal
                 </Link>
               </li>
               <li>
                 <Link href="/manual" className="hover:text-[#E3DED3] transition-colors">
-                  &gt; Índice do Manual
+                  &gt; Manual Oficial (18 Caps)
                 </Link>
               </li>
               <li>
                 <Link href="/cadastro" className="hover:text-[#E3DED3] transition-colors">
-                  &gt; Ficha de Sobrevivente
+                  &gt; Ficha de Sobrevivente (PDF/PNG)
+                </Link>
+              </li>
+              <li>
+                <Link href="/arquivos" className="hover:text-[#E3DED3] text-[#AA2830] transition-colors">
+                  &gt; Arquivos do Mundo
                 </Link>
               </li>
               <li>
                 <Link href="/busca" className="hover:text-[#E3DED3] transition-colors">
-                  &gt; Busca nos Capítulos
+                  &gt; Busca no Manual
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Quick Chapters */}
+          {/* Arquivos do Mundo Sub-seções */}
           <div>
             <h4 className="font-title text-sm text-[#E3DED3] tracking-wider uppercase mb-3 border-b border-[#252525] pb-1">
-              Capítulos Críticos
+              Arquivos do Mundo
             </h4>
             <ul className="space-y-2 text-xs font-mono-tech">
               <li>
-                <Link href="/manual/criacao-de-sobrevivente" className="hover:text-[#E3DED3] transition-colors">
-                  04 — Criação de Sobrevivente
+                <Link href="/arquivos/mundo-antes" className="hover:text-[#E3DED3] transition-colors">
+                  01 — O Mundo Antes
                 </Link>
               </li>
               <li>
-                <Link href="/manual/tempo-e-acoes" className="hover:text-[#E3DED3] transition-colors">
-                  03 — Pontos de Ação (PA)
+                <Link href="/arquivos/linha-do-tempo" className="hover:text-[#E3DED3] transition-colors">
+                  02 — A Linha do Tempo
                 </Link>
               </li>
               <li>
-                <Link href="/manual/combate" className="hover:text-[#E3DED3] transition-colors">
-                  07 — Regras de Combate
+                <Link href="/arquivos/virus" className="hover:text-[#E3DED3] text-[#AA2830] transition-colors">
+                  03 — O Vírus (Dossiê Confidencial)
                 </Link>
               </li>
               <li>
-                <Link href="/manual/ferimentos-infeccao-morte" className="hover:text-[#E3DED3] text-[#781D24] transition-colors">
-                  09 — Infecção e Morte
+                <Link href="/arquivos/registros" className="hover:text-[#E3DED3] transition-colors">
+                  04 — Registros &amp; Documentos
                 </Link>
               </li>
               <li>
-                <Link href="/manual/apendices" className="hover:text-[#E3DED3] transition-colors">
-                  18 — Apêndices &amp; Modelos
+                <Link href="/arquivos/locais" className="hover:text-[#E3DED3] transition-colors">
+                  05 — Locais &amp; Zonas de Risco
                 </Link>
               </li>
             </ul>
@@ -96,7 +102,7 @@ export default function Footer() {
               AVISO DE PROTOCOLO
             </div>
             <p className="text-[11px] text-[#C3BBA9] leading-relaxed">
-              O site é exclusivamente um portal de consulta de regras. A condução da campanha, interação social e envio de ordens ocorrem no WhatsApp sob arbitragem da equipe de mestres.
+              O site é exclusivamente um portal de consulta de regras e geração de fichas. A condução da campanha, interação social e envio de ordens ocorrem no WhatsApp sob arbitragem da equipe de mestres.
             </p>
           </div>
         </div>
@@ -104,10 +110,10 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-6 border-t border-[#252525] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono-tech">
           <div>
-            DEAD HOURS — MANUAL OFICIAL DO SOBREVIVENTE. EDIÇÃO 1.0.
+            DEAD HOURS — TERMINAL DE APOIO DO SOBREVIVENTE // EDIÇÃO 1.0
           </div>
           <div className="text-[#C3BBA9]">
-            HORÁRIO OFICIAL: BRASÍLIA (UTC−3) // REINÍCIO MATINAL: 06H00
+            HORÁRIO OFICIAL: BRASÍLIA (UTC−3) // REINÍCIO MATINAL DE PA: 06H00
           </div>
         </div>
       </div>

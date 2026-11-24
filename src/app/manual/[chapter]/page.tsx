@@ -11,7 +11,9 @@ import {
   BookOpen, 
   CheckCircle2, 
   ChevronRight,
-  Share2
+  Share2,
+  Layers,
+  Info
 } from 'lucide-react';
 
 interface ChapterPageProps {
@@ -28,7 +30,7 @@ export async function generateMetadata({ params }: ChapterPageProps) {
   if (!chapter) return { title: 'Capítulo Não Encontrado' };
 
   return {
-    title: `Cap. ${chapter.number} — ${chapter.title}`,
+    title: `Cap. ${chapter.number} — ${chapter.title} // Manual DEAD HOURS`,
     description: chapter.summary
   };
 }
@@ -69,7 +71,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
         </div>
 
         {/* Right Main Article Area */}
-        <article className="lg:col-span-8 xl:col-span-9 space-y-12">
+        <article className="lg:col-span-8 xl:col-span-9 space-y-10">
           {/* Header Banner */}
           <div className="bg-[#151515] border border-[#252525] border-l-4 border-l-[#781D24] p-6 sm:p-8 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -95,13 +97,32 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
             </p>
           </div>
 
+          {/* Mobile TOC (Fast Jump) */}
+          <div className="lg:hidden p-4 bg-[#111111] border border-[#2B2B2B] space-y-2">
+            <div className="text-[10px] font-mono-tech text-[#77736C] uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#AA2830]" />
+              SALTAR PARA SEÇÃO:
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {chapter.sections.map((sec, idx) => (
+                <a
+                  key={sec.id}
+                  href={`#${sec.id}`}
+                  className="text-xs font-mono-tech px-2.5 py-1 bg-[#161616] border border-[#333333] hover:border-[#781D24] text-[#C3BBA9] hover:text-[#E3DED3] transition-colors"
+                >
+                  § {idx + 1}. {sec.title}
+                </a>
+              ))}
+            </div>
+          </div>
+
           {/* Chapter Content Sections */}
           <div className="space-y-10">
             {chapter.sections.map((section) => (
               <section
                 key={section.id}
                 id={section.id}
-                className="bg-[#151515]/50 border border-[#252525] p-6 sm:p-8 space-y-6"
+                className="bg-[#151515]/50 border border-[#252525] p-6 sm:p-8 space-y-6 scroll-mt-24"
               >
                 <h2 className="font-title text-2xl text-[#E3DED3] tracking-wide border-b border-[#252525] pb-2 flex items-center justify-between">
                   <span>{section.title}</span>
@@ -139,19 +160,21 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
                 {/* Optional Callout / Alert */}
                 {section.callout && (
                   <div
-                    className={`p-4 border font-mono-tech text-xs space-y-1 ${
+                    className={`p-4 border font-mono-tech text-xs space-y-1.5 ${
                       section.callout.type === 'danger'
-                        ? 'border-[#781D24] bg-[#4B1117]/30 text-[#E3DED3]'
+                        ? 'border-[#781D24] bg-[#4B1117]/25 text-[#E3DED3]'
                         : section.callout.type === 'warning'
-                        ? 'border-[#781D24] bg-[#151515] text-[#C3BBA9]'
-                        : 'border-[#414141] bg-[#0B0B0B] text-[#C3BBA9]'
+                        ? 'border-[#AA2830] bg-[#181818] text-[#C3BBA9]'
+                        : section.callout.type === 'classified'
+                        ? 'border-[#414141] bg-[#0E0E0E] text-[#C3BBA9]'
+                        : 'border-[#333333] bg-[#121212] text-[#C3BBA9]'
                     }`}
                   >
-                    <div className="flex items-center gap-2 font-bold uppercase text-[#781D24]">
+                    <div className="flex items-center gap-2 font-bold uppercase text-[#AA2830]">
                       <AlertTriangle className="w-4 h-4 shrink-0" />
                       <span>{section.callout.title}</span>
                     </div>
-                    <p className="text-xs leading-relaxed text-[#E3DED3] pl-6">
+                    <p className="text-xs leading-relaxed text-[#E3DED3] pl-6 font-mono-tech">
                       {section.callout.text}
                     </p>
                   </div>
