@@ -30,6 +30,12 @@ export interface FichaData {
   declaracaoLida: boolean;
   assinatura: string;
   data: string;
+
+  // Identificação Fotográfica
+  foto?: string;
+  fotoZoom?: number;
+  fotoOffsetX?: number;
+  fotoOffsetY?: number;
 }
 
 /**
@@ -381,13 +387,49 @@ export async function generateFichaPDF(data: FichaData): Promise<Uint8Array> {
     textColor: cTextWhite
   });
 
-  // Photo Box
+  // Photo Box (Identificação Fotográfica do Sobrevivente)
   drawBox(780, 160, 192, 108, { color: cCard, borderColor: cBorder, borderWidth: 1 });
-  drawBox(792, 168, 168, 92, { borderColor: cBorderLight, borderWidth: 0.8 });
-  drawTextAt("[ REGISTRO FACIAL ]", 792, 202, 7.5, fontCourier, cTextMuted, { alignCenter: true, boxW: 168 });
-  drawTextAt("ARQUIVO DE CAMPO", 792, 214, 6.5, fontCourier, cTextMuted, { alignCenter: true, boxW: 168 });
-  drawBox(812, 232, 130, 18, { color: cBorderRed, borderColor: cRedBright, borderWidth: 1 });
-  drawTextAt("TRIAGEM OK", 812, 244, 8, fontCourierBold, cTextPure, { alignCenter: true, boxW: 130 });
+
+  let photoEmbedded = false;
+  if (data.foto) {
+    try {
+      const isPng = data.foto.startsWith('data:image/png');
+      const base64Clean = data.foto.replace(/^data:image\/\w+;base64,/, '');
+      const binaryStr = typeof atob !== 'undefined' 
+        ? atob(base64Clean) 
+        : Buffer.from(base64Clean, 'base64').toString('binary');
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+
+      const embeddedImg = isPng 
+        ? await pdfDoc.embedPng(bytes) 
+        : await pdfDoc.embedJpg(bytes);
+
+      page.drawImage(embeddedImg, {
+        x: sx(792),
+        y: py(168 + 92),
+        width: sx(168),
+        height: sy(92),
+      });
+
+      drawBox(792, 168, 168, 92, { borderColor: cBorderRed, borderWidth: 1.2 });
+      drawBox(808, 246, 136, 12, { color: rgb(20 / 255, 10 / 255, 12 / 255), borderColor: cBorderRed, borderWidth: 0.5 });
+      drawTextAt("[ REGISTRO BIOMETRICO ]", 808, 254.5, 6, fontCourierBold, cRedBright, { alignCenter: true, boxW: 136 });
+      photoEmbedded = true;
+    } catch (err) {
+      console.warn("Falha ao incorporar fotografia no PDF:", err);
+    }
+  }
+
+  if (!photoEmbedded) {
+    drawBox(792, 168, 168, 92, { borderColor: cBorderLight, borderWidth: 0.8 });
+    drawTextAt("[ REGISTRO FACIAL ]", 792, 202, 7.5, fontCourier, cTextMuted, { alignCenter: true, boxW: 168 });
+    drawTextAt("ARQUIVO DE CAMPO", 792, 214, 6.5, fontCourier, cTextMuted, { alignCenter: true, boxW: 168 });
+    drawBox(812, 232, 130, 18, { color: cBorderRed, borderColor: cRedBright, borderWidth: 1 });
+    drawTextAt("TRIAGEM OK", 812, 244, 8, fontCourierBold, cTextPure, { alignCenter: true, boxW: 130 });
+  }
 
   // ==================== 2. ATRIBUTOS ====================
   drawSectionHeader(280, "02", "MATRIZ DE ATRIBUTOS PRINCIPAIS (12 PONTOS DISTRIBUIDOS)", "SEC-02 // BIO-METRICA OPERACIONAL");
@@ -933,29 +975,74 @@ export async function renderFichaToCanvas(data: FichaData, canvas: HTMLCanvasEle
   ctx.fillStyle = colors.textWhite;
   ctx.fillText(data.ocupacao || '—', 543, 239);
 
-  // Photo Box
+  // Photo Box (Identificação Fotográfica do Sobrevivente)
   ctx.fillStyle = colors.card;
   ctx.fillRect(780, 160, 192, 108);
   ctx.strokeStyle = colors.border;
   ctx.strokeRect(780, 160, 192, 108);
 
-  ctx.strokeStyle = colors.borderLight;
-  ctx.strokeRect(792, 168, 168, 92);
-  ctx.fillStyle = colors.textMuted;
-  ctx.font = '8px "IBM Plex Mono", monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('[ REGISTRO FACIAL ]', 876, 202);
-  ctx.font = '7px "IBM Plex Mono", monospace';
-  ctx.fillText('ARQUIVO DE CAMPO', 876, 214);
+  let canvasPhotoDrawn = false;
+  if (data.foto && typeof Image !== 'undefined') {
+    try {
+      const img = new Image();
+      img.src = data.foto;
+      if (!img.complete) {
+        await new Promise((resolve) => {
+          img.onload = () => resolve(null);
+          img.onerror = () => resolve(null);
+        });
+      }
 
-  ctx.fillStyle = colors.borderRed;
-  ctx.fillRect(812, 232, 130, 18);
-  ctx.strokeStyle = colors.redBright;
-  ctx.strokeRect(812, 232, 130, 18);
-  ctx.fillStyle = colors.textPure;
-  ctx.font = 'bold 8.5px "IBM Plex Mono", monospace';
-  ctx.fillText('TRIAGEM OK', 876, 244);
-  ctx.textAlign = 'left';
+      if (img.naturalWidth > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(792, 168, 168, 92);
+        ctx.clip();
+        ctx.drawImage(img, 792, 168, 168, 92);
+        ctx.restore();
+
+        ctx.strokeStyle = colors.borderRed;
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(792, 168, 168, 92);
+
+        ctx.fillStyle = 'rgba(20, 10, 12, 0.85)';
+        ctx.fillRect(808, 246, 136, 12);
+        ctx.strokeStyle = colors.borderRed;
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(808, 246, 136, 12);
+
+        ctx.fillStyle = colors.redBright;
+        ctx.font = 'bold 7px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('[ REGISTRO BIOMETRICO ]', 876, 255);
+        ctx.textAlign = 'left';
+
+        canvasPhotoDrawn = true;
+      }
+    } catch (err) {
+      console.warn("Falha ao renderizar fotografia no Canvas:", err);
+    }
+  }
+
+  if (!canvasPhotoDrawn) {
+    ctx.strokeStyle = colors.borderLight;
+    ctx.strokeRect(792, 168, 168, 92);
+    ctx.fillStyle = colors.textMuted;
+    ctx.font = '8px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('[ REGISTRO FACIAL ]', 876, 202);
+    ctx.font = '7px "IBM Plex Mono", monospace';
+    ctx.fillText('ARQUIVO DE CAMPO', 876, 214);
+
+    ctx.fillStyle = colors.borderRed;
+    ctx.fillRect(812, 232, 130, 18);
+    ctx.strokeStyle = colors.redBright;
+    ctx.strokeRect(812, 232, 130, 18);
+    ctx.fillStyle = colors.textPure;
+    ctx.font = 'bold 8.5px "IBM Plex Mono", monospace';
+    ctx.fillText('TRIAGEM OK', 876, 244);
+    ctx.textAlign = 'left';
+  }
 
   // ==================== 2. ATRIBUTOS ====================
   drawSectionHeader(280, "02", "MATRIZ DE ATRIBUTOS PRINCIPAIS (12 PONTOS DISTRIBUIDOS)", "SEC-02 // BIO-METRICA OPERACIONAL");
@@ -1423,6 +1510,7 @@ IDENTIFICAÇÃO
 Nome do jogador: ${data.nomeJogador || '—'}
 Nome do personagem: ${data.nomePersonagem || '—'}
 Idade: ${data.idade || '—'}
+Fotografia: ${data.foto ? 'HOMOLOGADA // BIOMETRIA DE CAMPO VINCULADA' : 'NÃO ANEXADA'}
 Aparência física: ${data.aparencia || '—'}
 Personalidade: ${data.personalidade || '—'}
 Ocupação anterior ao apocalipse: ${data.ocupacao || '—'}
