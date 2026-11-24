@@ -19,6 +19,7 @@ import {
   downloadFichaPDF, 
   formatFichaForClipboard 
 } from '@/lib/exportFicha';
+import { tacticalAudio } from '@/lib/audioSynthesis';
 
 export default function CadastroPage() {
   const [formData, setFormData] = useState<FichaData>({
@@ -64,6 +65,8 @@ export default function CadastroPage() {
   const [isExportingPNG, setIsExportingPNG] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [pendingExportType, setPendingExportType] = useState<'PDF' | 'PNG' | null>(null);
+  const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -78,6 +81,7 @@ export default function CadastroPage() {
   };
 
   const handlePrint = () => {
+    tacticalAudio.playTacticalClick();
     if (typeof window !== 'undefined') {
       window.print();
     }
@@ -85,6 +89,7 @@ export default function CadastroPage() {
 
   const handleCopy = async () => {
     try {
+      tacticalAudio.playTacticalClick();
       const formattedText = formatFichaForClipboard(formData);
       await navigator.clipboard.writeText(formattedText);
       setCopiedSuccess(true);
@@ -96,20 +101,56 @@ export default function CadastroPage() {
     }
   };
 
-  const handleDownloadPNG = async () => {
-    try {
-      setIsExportingPNG(true);
-      setErrorMessage(null);
-      await downloadFichaPNG(formData);
-    } catch (err) {
-      console.error(err);
-      setErrorMessage('Erro ao gerar imagem PNG. Verifique se o navegador suporta canvas.');
-    } finally {
-      setIsExportingPNG(false);
+  // Cálculos derivados automáticos
+  const numVig = parseInt(formData.vigor) || 0;
+  const numAgi = parseInt(formData.agilidade) || 0;
+  const numFor = parseInt(formData.forca) || 0;
+  const numInt = parseInt(formData.intelecto) || 0;
+  const numPer = parseInt(formData.percepcao) || 0;
+  const numPres = parseInt(formData.presenca) || 0;
+
+  const vidaCalc = 10 + numVig * 2;
+  const folegoCalc = 5 + numVig;
+  const defesaCalc = 10 + numAgi;
+  const cargaCalc = 5 + numFor;
+
+  // Total de pontos gastos nos atributos
+  const totalPontos = numFor + numAgi + numVig + numInt + numPer + numPres;
+  const hasAttrOverLimit = [numFor, numAgi, numVig, numInt, numPer, numPres].some((v) => v > 3);
+
+  const getValidationWarnings = () => {
+    const warnings: string[] = [];
+    if (!formData.nomePersonagem.trim()) {
+      warnings.push('Nome do Personagem não preenchido');
+    }
+    if (!formData.nomeJogador.trim()) {
+      warnings.push('Nome do Jogador não informado');
+    }
+    if (totalPontos === 0) {
+      warnings.push('Nenhum ponto de Atributo distribuído (0/12)');
+    }
+    if (!formData.declaracaoLida) {
+      warnings.push('Termo de Declaração Formal não assinalado');
+    }
+    return warnings;
+  };
+
+  const handleRequestDownload = (type: 'PDF' | 'PNG') => {
+    tacticalAudio.playTacticalClick();
+    const warnings = getValidationWarnings();
+    if (warnings.length > 0) {
+      setValidationWarnings(warnings);
+      setPendingExportType(type);
+    } else {
+      if (type === 'PDF') {
+        executeDownloadPDF();
+      } else {
+        executeDownloadPNG();
+      }
     }
   };
 
-  const handleDownloadPDF = async () => {
+  const executeDownloadPDF = async () => {
     try {
       setIsExportingPDF(true);
       setErrorMessage(null);
@@ -119,26 +160,23 @@ export default function CadastroPage() {
       setErrorMessage('Erro ao gerar PDF editável. Tente novamente.');
     } finally {
       setIsExportingPDF(false);
+      setPendingExportType(null);
     }
   };
 
-  // Cálculos derivados automáticos
-  const numVig = parseInt(formData.vigor) || 0;
-  const numAgi = parseInt(formData.agilidade) || 0;
-  const numFor = parseInt(formData.forca) || 0;
-  const vidaCalc = 10 + numVig * 2;
-  const folegoCalc = 5 + numVig;
-  const defesaCalc = 10 + numAgi;
-  const cargaCalc = 5 + numFor;
-
-  // Total de pontos gastos nos atributos
-  const totalPontos =
-    (parseInt(formData.forca) || 0) +
-    (parseInt(formData.agilidade) || 0) +
-    (parseInt(formData.vigor) || 0) +
-    (parseInt(formData.intelecto) || 0) +
-    (parseInt(formData.percepcao) || 0) +
-    (parseInt(formData.presenca) || 0);
+  const executeDownloadPNG = async () => {
+    try {
+      setIsExportingPNG(true);
+      setErrorMessage(null);
+      await downloadFichaPNG(formData);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage('Erro ao gerar imagem PNG. Verifique se o navegador suporta canvas.');
+    } finally {
+      setIsExportingPNG(false);
+      setPendingExportType(null);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
@@ -304,13 +342,51 @@ export default function CadastroPage() {
 
         {/* SECTION 2: ATRIBUTOS */}
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between border-b border-[#252525] pb-1 gap-2">
-            <span className="font-mono-tech text-xs font-bold text-[#781D24] uppercase tracking-wider">
-              2. ATRIBUTOS (12 PONTOS DISTRIBUÍDOS // MÁXIMO 3 INICIAL)
-            </span>
-            <span className={`font-mono-tech text-[10px] ${totalPontos > 12 ? 'text-[#781D24] font-bold' : 'text-[#77736C]'}`}>
-              PONTOS UTILIZADOS: {totalPontos} / 12
-            </span>
+          <div className="border-b border-[#252525] pb-2 space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-mono-tech text-xs font-bold text-[#781D24] uppercase tracking-wider">
+                2. ATRIBUTOS (12 PONTOS DISTRIBUÍDOS // MÁXIMO 3 INICIAL)
+              </span>
+              <div className="flex items-center gap-2">
+                {totalPontos === 12 ? (
+                  <span className="font-mono-tech text-[10px] px-2 py-0.5 border border-[#4E8752] text-[#4E8752] bg-[#4E8752]/10 font-bold">
+                    ✓ 12/12 PONTOS ALOCADOS (LIMITE EXATO)
+                  </span>
+                ) : totalPontos < 12 ? (
+                  <span className="font-mono-tech text-[10px] px-2 py-0.5 border border-[#414141] text-[#C3BBA9] bg-[#151515]">
+                    PONTOS: {totalPontos} / 12 ({12 - totalPontos} RESTANTE{12 - totalPontos > 1 ? 'S' : ''})
+                  </span>
+                ) : (
+                  <span className="font-mono-tech text-[10px] px-2 py-0.5 border border-[#AA2830] text-white bg-[#781D24] font-bold animate-pulse">
+                    EXCESSO: {totalPontos} / 12 (+{totalPontos - 12} ACIMA DO LIMITE)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Visualizador de pontos segmentados */}
+            <div className="flex items-center gap-1 pt-1">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-2 flex-1 transition-all ${
+                    i < totalPontos
+                      ? totalPontos > 12
+                        ? 'bg-[#AA2830]'
+                        : 'bg-[#781D24]'
+                      : 'bg-[#252525]'
+                  }`}
+                  title={`Ponto ${i + 1} de 12`}
+                />
+              ))}
+            </div>
+
+            {hasAttrOverLimit && (
+              <div className="text-[11px] font-mono-tech text-[#AA2830] bg-[#1a1112] border-l-2 border-[#AA2830] p-2 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                <span>AVISO: Um ou mais atributos excedem o limite inicial recomendado de 3 pontos para sobreviventes novatos.</span>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -574,7 +650,7 @@ export default function CadastroPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
           {/* BOTÃO 1: BAIXAR PDF EDITÁVEL */}
           <button
-            onClick={handleDownloadPDF}
+            onClick={() => handleRequestDownload('PDF')}
             disabled={isExportingPDF}
             className="flex items-center justify-center gap-2 px-4 py-3.5 bg-[#0B0B0B] hover:bg-[#252525] text-[#E3DED3] border border-[#414141] hover:border-[#781D24] font-mono-tech text-xs tracking-wider uppercase transition-all shadow-md disabled:opacity-50"
           >
@@ -593,7 +669,7 @@ export default function CadastroPage() {
 
           {/* BOTÃO 2: BAIXAR COMO IMAGEM (PNG) */}
           <button
-            onClick={handleDownloadPNG}
+            onClick={() => handleRequestDownload('PNG')}
             disabled={isExportingPNG}
             className="flex items-center justify-center gap-2 px-4 py-3.5 bg-[#0B0B0B] hover:bg-[#252525] text-[#E3DED3] border border-[#414141] hover:border-[#781D24] font-mono-tech text-xs tracking-wider uppercase transition-all shadow-md disabled:opacity-50"
           >
@@ -629,6 +705,60 @@ export default function CadastroPage() {
           </button>
         </div>
       </div>
+
+      {/* Modal de Validação Pré-Exportação Não-Bloqueante */}
+      {pendingExportType && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#131313] border-2 border-[#781D24] max-w-md w-full p-6 space-y-4 shadow-2xl font-mono-tech text-xs">
+            <div className="flex items-center gap-2 text-[#AA2830] font-bold text-sm border-b border-[#2B2B2B] pb-2">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
+              <span>PROTOCOLO // DADOS ESSENCIAIS PENDENTES</span>
+            </div>
+
+            <p className="text-[#C3BBA9] leading-relaxed">
+              Sua ficha possui campos fundamentais que ainda não foram preenchidos:
+            </p>
+
+            <ul className="space-y-1.5 pl-2 border-l-2 border-[#781D24] text-[#E3DED3]">
+              {validationWarnings.map((w, idx) => (
+                <li key={idx} className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-[#AA2830] rounded-full shrink-0" />
+                  <span>{w}</span>
+                </li>
+              ))}
+            </ul>
+
+            <p className="text-[11px] text-[#77736C] leading-relaxed">
+              Deseja revisar os dados antes de gerar o arquivo ou prefere exportar o rascunho com os campos pendentes mesmo assim?
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-3 border-t border-[#2B2B2B]">
+              <button
+                onClick={() => {
+                  tacticalAudio.playTacticalClick();
+                  setPendingExportType(null);
+                }}
+                className="w-full sm:w-auto px-4 py-2 border border-[#414141] bg-[#1E1E1E] hover:bg-[#2B2B2B] text-[#E3DED3] transition-colors uppercase font-bold"
+              >
+                REVISAR FICHA
+              </button>
+              <button
+                onClick={() => {
+                  tacticalAudio.playTacticalClick();
+                  if (pendingExportType === 'PDF') {
+                    executeDownloadPDF();
+                  } else {
+                    executeDownloadPNG();
+                  }
+                }}
+                className="w-full sm:w-auto px-4 py-2 border border-[#781D24] bg-[#781D24] hover:bg-[#AA2830] text-white transition-colors uppercase font-bold"
+              >
+                EXPORTAR MESMO ASSIM
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

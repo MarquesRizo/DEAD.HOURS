@@ -13,6 +13,7 @@ import {
   Database,
   Radio
 } from 'lucide-react';
+import RadioWidget from '@/components/layout/RadioWidget';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -38,10 +39,12 @@ export default function Header() {
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#E3DED3] animate-ping" />
           <span className="hidden sm:inline">FREQ: 142.8 MHz // TERMINAL DE EMERGÊNCIA ATIVO</span>
-          <span className="sm:hidden">FREQ: 142.8 MHz // TERMINAL ATIVO</span>
+          <span className="sm:hidden">FREQ: 142.8 MHz</span>
         </div>
-        <span className="hidden md:inline opacity-90">ARQUIVO DE SOBREVIVÊNCIA PERSISTENTE // EDIÇÃO 1.0</span>
-        <span className="opacity-90">UTC−3 (BRASÍLIA)</span>
+        <div className="flex items-center gap-3">
+          <span className="hidden lg:inline opacity-90">ARQUIVO DE SOBREVIVÊNCIA PERSISTENTE // EDIÇÃO 1.0</span>
+          <RadioWidget />
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

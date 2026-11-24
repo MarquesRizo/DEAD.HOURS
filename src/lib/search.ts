@@ -25,15 +25,15 @@ export function searchManual(query: string): SearchResult[] {
     let bestSnippet = '';
     let bestSection: ChapterSection | undefined;
 
-    // Check title & summary
+    // Check title, subtitle & summary
     const titleLower = chapter.title.toLowerCase();
     const summaryLower = chapter.summary.toLowerCase();
     const subtitleLower = chapter.subtitle.toLowerCase();
 
     for (const term of queryTerms) {
-      if (titleLower.includes(term)) bestScore += 10;
-      if (subtitleLower.includes(term)) bestScore += 6;
-      if (summaryLower.includes(term)) bestScore += 4;
+      if (titleLower.includes(term)) bestScore += 12;
+      if (subtitleLower.includes(term)) bestScore += 7;
+      if (summaryLower.includes(term)) bestScore += 5;
     }
 
     if (bestScore > 0) {
@@ -43,10 +43,11 @@ export function searchManual(query: string): SearchResult[] {
     // Check sections
     for (const section of chapter.sections) {
       let sectionScore = 0;
+      let sectionSnippet = '';
       const secTitleLower = section.title.toLowerCase();
 
       for (const term of queryTerms) {
-        if (secTitleLower.includes(term)) sectionScore += 8;
+        if (secTitleLower.includes(term)) sectionScore += 9;
       }
 
       // Check content paragraphs
@@ -60,12 +61,12 @@ export function searchManual(query: string): SearchResult[] {
           }
         }
 
-        if (matchesInPara > 0 && !bestSnippet) {
-          // Extract snippet
+        if (matchesInPara > 0 && !sectionSnippet) {
+          // Extract centered snippet around the matched term
           const matchIndex = paraLower.indexOf(queryTerms[0]);
-          const start = Math.max(0, matchIndex - 40);
-          const end = Math.min(para.length, matchIndex + 120);
-          bestSnippet = (start > 0 ? '...' : '') + para.slice(start, end) + (end < para.length ? '...' : '');
+          const start = Math.max(0, matchIndex - 50);
+          const end = Math.min(para.length, matchIndex + 140);
+          sectionSnippet = (start > 0 ? '...' : '') + para.slice(start, end) + (end < para.length ? '...' : '');
         }
       }
 
@@ -74,9 +75,31 @@ export function searchManual(query: string): SearchResult[] {
         const calloutText = `${section.callout.title} ${section.callout.text}`.toLowerCase();
         for (const term of queryTerms) {
           if (calloutText.includes(term)) {
-            sectionScore += 4;
-            if (!bestSnippet) {
-              bestSnippet = section.callout.text.slice(0, 140) + '...';
+            sectionScore += 5;
+            if (!sectionSnippet) {
+              sectionSnippet = `[${section.callout.title}] ` + section.callout.text.slice(0, 140) + '...';
+            }
+          }
+        }
+      }
+
+      // Check tables
+      if (section.table) {
+        const tableContent = [
+          ...section.table.headers,
+          ...section.table.rows.flat().map(String)
+        ].join(' ').toLowerCase();
+
+        for (const term of queryTerms) {
+          if (tableContent.includes(term)) {
+            sectionScore += 6;
+            if (!sectionSnippet) {
+              const matchedRow = section.table.rows.find(row => 
+                row.some(cell => String(cell).toLowerCase().includes(term))
+              );
+              if (matchedRow) {
+                sectionSnippet = `[Tabela: ${section.title}] ${matchedRow.join(' | ')}`;
+              }
             }
           }
         }
@@ -85,6 +108,9 @@ export function searchManual(query: string): SearchResult[] {
       if (sectionScore > bestScore) {
         bestScore = sectionScore;
         bestSection = section;
+        if (sectionSnippet) {
+          bestSnippet = sectionSnippet;
+        }
       }
     }
 
