@@ -63,6 +63,9 @@ export interface WorldLocation {
   knownResources: string[];
   tacticalNotes: string;
   status: 'Explorado' | 'Bloqueado' | 'Hostil' | 'Desconhecido';
+  isSecretDossier?: boolean;
+  classifiedIntel?: string;
+  evidenceStamp?: string;
 }
 
 // 1. O MUNDO ANTES
@@ -419,7 +422,10 @@ export const WORLD_LOCATIONS: WorldLocation[] = [
     description: 'Antigo epicentro de triagem e internação dos primeiros surtos. O interior é escuro, com odor pútrido intenso e múltiplos caminhantes confinados nos corredores de internação. Abriga os medicamentos mais raros da região, como antibióticos de amplo espectro.',
     knownResources: ['Antibióticos e sedativos farmacêuticos', 'Material de sutura e curativos estéreis', 'Bolsas de soro e equipos', 'Macas de transporte'],
     tacticalNotes: 'Apenas grupos armados de no mínimo 4 pessoas com iluminação própria e máscaras respiratórias devem entrar. Proibido disparar armas de fogo no interior.',
-    status: 'Hostil'
+    status: 'Hostil',
+    isSecretDossier: true,
+    classifiedIntel: 'LAUDO CONFIDENCIAL RETIDO // PACIENTES COM MUTABILIDADE CELULAR NÃO PARARAM APÓS MORTE ENCEFÁLICA',
+    evidenceStamp: 'BIOHAZARD // CONTENÇÃO NULA'
   },
   {
     id: 'sala-comando-emergencia',
@@ -445,7 +451,10 @@ export const WORLD_LOCATIONS: WorldLocation[] = [
     description: 'Antiga barreira de contenção das forças de segurança montada nas rodovias de acesso. Veículos militares abandonados e barricadas reforçadas com concertina. Pichações alertam contra ruídos na área, indicando alta sensibilidade auditiva das hordas locais.',
     knownResources: ['Cartuchos de munição militar (calibres 9mm e 5.56)', 'Capacetes e coletes táticos avariados', 'Sinalizadores pirotécnicos', 'Módulos de rádio veicular'],
     tacticalNotes: 'Atenção extrema ao cruzar o asfalto quebrado: o arame enferrujado provoca ferimentos debastadores e ruído estridente se pisado.',
-    status: 'Bloqueado'
+    status: 'Bloqueado',
+    isSecretDossier: true,
+    classifiedIntel: 'DIRETRIZ DE CONTENÇÃO MILITAR EXTREMA // ORDEM DE DISPARO REAL CONTRA COMBOIOS CIVIS EM FUGA',
+    evidenceStamp: 'TOP SECRET // PROTOCOLO QZ'
   },
   {
     id: 'distrito-policial-barricado',
@@ -458,7 +467,10 @@ export const WORLD_LOCATIONS: WorldLocation[] = [
     description: 'Delegacia central que funcionou como último posto de triagem armada para civis nos primeiros dias da crise. Mesas e arquivos de aço foram improvisados como barricadas. Terminal de computador fosforescente ainda emite estática de backup.',
     knownResources: ['Coldres e armas curtas de serviço', 'Algemas e chaves mestras de viatura', 'Registros criminais e fichas de ocorrência', 'Rações de emergência da reserva tática'],
     tacticalNotes: 'Corredores estreitos com poucas rotas de fuga. Caminhantes confinados em salas fechadas podem arrombar portas fragilizadas com ruídos repentinos.',
-    status: 'Hostil'
+    status: 'Hostil',
+    isSecretDossier: true,
+    classifiedIntel: 'CASO EVIDÊNCIA POLICIAL #DH-09 // CARCERAGEM VIOLADA POR DENTRO COM PERDA TOTAL DA GUARDA',
+    evidenceStamp: 'R.P.D. CASE EVIDENCE'
   },
   {
     id: 'tuneis-metro-subterraneo',
@@ -471,7 +483,10 @@ export const WORLD_LOCATIONS: WorldLocation[] = [
     description: 'A rede metroviária oferecia proteção contra o inverno e o caos da superfície, mas tornou-se uma armadilha fatal. A umidade constante e corpos em decomposição geraram colônias de fungos bioluminescentes. Mutados velozes caçam pelo eco no escuro.',
     knownResources: ['Cabos de cobre e fiação de alta densidade', 'Ferramentas pesadas de manutenção metroviária', 'Lanternas industriais impermeáveis', 'Filtros respiratórios usados'],
     tacticalNotes: 'Obrigatório o uso de máscaras com filtro contra partículas. Disparar armas de fogo neste túnel atrai imediatamente dezenas de infectados num raio de centenas de metros.',
-    status: 'Hostil'
+    status: 'Hostil',
+    isSecretDossier: true,
+    classifiedIntel: 'BIOMA PARASITÁRIO GRAU 5 // TRANSMISSÃO DE ESPOROS ATIVA // REQUER TRAJE HERMÉTICO COMPLETO',
+    evidenceStamp: 'AMOSTRA RESTRITA // QUARENTENA'
   },
   {
     id: 'santuario-usina-industrial',

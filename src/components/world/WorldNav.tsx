@@ -68,7 +68,7 @@ export default function WorldNav() {
   };
 
   return (
-    <nav className="border-b border-[#2B2B2B] bg-[#0E0E0E] sticky top-16 z-40 backdrop-blur-md">
+    <nav className="border-b border-[#2B2B2B] bg-[#0E0E0E]/95 sticky top-14 sm:top-16 z-40 backdrop-blur-md shadow-md transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-1 overflow-x-auto py-2 no-scrollbar">
           {tabs.map((tab) => {

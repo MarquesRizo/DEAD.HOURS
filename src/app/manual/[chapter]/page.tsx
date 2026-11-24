@@ -139,7 +139,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
                   src={CHAPTER_HERO_IMAGES[chapter.slug].src}
                   alt={CHAPTER_HERO_IMAGES[chapter.slug].alt}
                   fill
-                  className="object-cover filter grayscale contrast-120 brightness-80 group-hover:brightness-95 group-hover:scale-102 transition-all duration-700"
+                  className="object-cover filter contrast-115 brightness-90 group-hover:brightness-100 group-hover:scale-102 transition-all duration-700"
                   sizes="(max-width: 1024px) 100vw, 75vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B] via-transparent to-transparent" />

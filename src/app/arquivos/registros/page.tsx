@@ -56,7 +56,7 @@ export default function RegistrosDocumentosPage() {
               src="/images/world-archives.jpg"
               alt="Acervo documental e fichário físico preservado em bunker subterrâneo"
               fill
-              className="object-cover filter grayscale contrast-125 brightness-75 group-hover:brightness-90 transition-all duration-700"
+              className="object-cover filter contrast-115 brightness-90 group-hover:brightness-100 transition-all duration-700"
               sizes="(max-width: 1200px) 100vw, 1200px"
               priority
             />

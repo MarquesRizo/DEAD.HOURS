@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -17,7 +17,16 @@ import RadioWidget from '@/components/layout/RadioWidget';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const navLinks = [
     { href: '/', label: 'Início', icon: ShieldAlert },
@@ -33,9 +42,13 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0B0B0B]/95 backdrop-blur-md border-b border-[#252525]">
-      {/* Faixa Tática Superior com Frequência de Rádio */}
-      <div className="bg-[#781D24] text-[#E3DED3] text-[10px] font-mono-tech py-0.5 px-4 text-center tracking-widest font-semibold flex items-center justify-between">
+    <header className="sticky top-0 z-50 bg-[#0B0B0B]/95 backdrop-blur-md border-b border-[#252525] transition-all duration-300">
+      {/* Faixa Tática Superior com Frequência de Rádio — Some suavemente ao rolar a página */}
+      <div 
+        className={`bg-[#781D24] text-[#E3DED3] text-[10px] font-mono-tech px-4 text-center tracking-widest font-semibold flex items-center justify-between transition-all duration-300 overflow-hidden ${
+          isScrolled ? 'max-h-0 py-0 opacity-0 -translate-y-full pointer-events-none' : 'max-h-8 py-0.5 opacity-100 translate-y-0'
+        }`}
+      >
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#E3DED3] animate-ping" />
           <span className="hidden sm:inline">FREQ: 142.8 MHz // TERMINAL DE EMERGÊNCIA ATIVO</span>
@@ -48,7 +61,7 @@ export default function Header() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 sm:h-16 transition-all duration-300">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-9 h-9 bg-[#151515] border border-[#781D24] flex items-center justify-center font-title font-bold text-lg text-[#E3DED3] group-hover:border-[#E3DED3] transition-colors">

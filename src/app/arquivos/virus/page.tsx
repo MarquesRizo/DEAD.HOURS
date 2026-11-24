@@ -58,7 +58,7 @@ export default function VirusDossierPage() {
               src="/images/virus-lab.jpg"
               alt="Instalação improvisada de triagem biológica em quarentena industrial"
               fill
-              className="object-cover filter grayscale contrast-125 brightness-80 group-hover:brightness-90 transition-all duration-700"
+              className="object-cover filter contrast-115 brightness-90 group-hover:brightness-100 transition-all duration-700"
               sizes="(max-width: 1200px) 100vw, 1200px"
               priority
             />

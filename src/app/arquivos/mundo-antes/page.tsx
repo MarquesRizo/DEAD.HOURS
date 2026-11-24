@@ -57,7 +57,7 @@ export default function MundoAntesPage() {
               src="/images/world-before.jpg"
               alt="Metrópole antes do colapso em manhã nebulosa com tráfego suspenso"
               fill
-              className="object-cover filter grayscale contrast-110 brightness-90 group-hover:brightness-95 transition-all duration-700"
+              className="object-cover filter contrast-110 brightness-95 group-hover:brightness-105 transition-all duration-700"
               sizes="(max-width: 1200px) 100vw, 1200px"
               priority
             />

@@ -309,6 +309,99 @@ body {
   background-size: 100% 3px, 6px 100%;
 }
 
+/* Confidential Secret Files & Evidence Dossier Styles */
+.dossier-folder {
+  background: linear-gradient(135deg, #181614 0%, #100F0E 100%);
+  border: 1px solid #38332A;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(195, 187, 169, 0.08);
+  position: relative;
+}
+
+.dossier-tab {
+  background: #24201B;
+  border: 1px solid #38332A;
+  border-bottom: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: #C3BBA9;
+  padding: 0.25rem 0.85rem;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 100%, 0 100%);
+}
+
+.redacted-bar {
+  background-color: #0E0E0E;
+  color: transparent;
+  padding: 0 5px;
+  user-select: none;
+  border-radius: 1px;
+  transition: all 0.25s ease;
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid #222222;
+}
+
+.redacted-bar:hover {
+  background-color: rgba(120, 29, 36, 0.4);
+  color: #FFFFFF;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  border-color: #781D24;
+}
+
+.stamp-topsecret {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 2px solid #AA2830;
+  background: rgba(170, 40, 48, 0.22);
+  color: #FF5A65;
+  padding: 0.25rem 0.75rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+  box-shadow: 0 0 14px rgba(170, 40, 48, 0.35);
+  text-shadow: 0 0 6px rgba(170, 40, 48, 0.6);
+}
+
+.stamp-declassified {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 2px solid #3F5E46;
+  background: rgba(63, 94, 70, 0.25);
+  color: #74B583;
+  padding: 0.25rem 0.75rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transform: rotate(1.5deg);
+}
+
+.evidence-tape {
+  background: repeating-linear-gradient(
+    -45deg,
+    #D97706,
+    #D97706 12px,
+    #0E0E0E 12px,
+    #0E0E0E 24px
+  );
+  color: #FFFFFF;
+  font-weight: 900;
+  font-size: 0.62rem;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.2rem 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  display: inline-block;
+}
+
 /* Print CSS for Survivor Registration */
 @media print {
   body {

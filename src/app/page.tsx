@@ -122,19 +122,20 @@ export default function HomePage() {
     <div className="space-y-0 pb-16">
       {/* Cinematic Hero com Fotografia de Fundo */}
       <section className="relative min-h-[520px] sm:min-h-[580px] flex items-center justify-center border-b border-[#2B2B2B] bg-[#090909] overflow-hidden">
-        {/* Imagem de Fundo Cinematográfica */}
+        {/* Imagem de Fundo Cinematográfica com Cores Autênticas */}
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/hero-highway.jpg"
             alt="Rodovia abandonada em ruínas rumo à metrópole morta"
             fill
-            className="object-cover filter grayscale contrast-125 brightness-45 scale-105"
+            className="object-cover filter contrast-115 brightness-75 scale-105 transition-all duration-1000"
             sizes="100vw"
             priority
           />
-          {/* Vinheta Escura e Textura */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#090909] via-[#090909]/75 to-[#090909]/90" />
-          <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
+          {/* Vinheta Escura e Textura com Atmosfera Tintada */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#090909] via-[#090909]/50 to-[#090909]/70" />
+          <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/20 to-black/80 pointer-events-none" />
+          <div className="absolute inset-0 bg-grid-pattern opacity-15 pointer-events-none" />
         </div>
 
         {/* Conteúdo do Hero */}
@@ -352,32 +353,39 @@ export default function HomePage() {
             <Link
               key={item.code}
               href="/arquivos/locais"
-              className="border border-[#2B2B2B] bg-[#131313] hover:border-[#781D24] overflow-hidden group block transition-all flex flex-col justify-between"
+              className="border border-[#38332A] bg-[#141210] hover:border-[#AA2830] overflow-hidden group block transition-all flex flex-col justify-between shadow-lg hover:shadow-[0_8px_25px_rgba(170,40,48,0.25)] relative"
             >
-              <div className="relative h-44 w-full bg-[#090909] overflow-hidden">
+              {/* Pasta de Arquivo Confidencial / Tab */}
+              <div className="bg-[#1F1B16] px-3 py-1 border-b border-[#38332A] flex items-center justify-between text-[10px] font-mono-tech">
+                <span className="text-[#C3BBA9] font-bold tracking-wider">PASTA: {item.code}</span>
+                <span className="text-[#AA2830] text-[9px] font-bold">CONFIDENCIAL</span>
+              </div>
+
+              <div className="relative h-48 w-full bg-[#090909] overflow-hidden">
                 <Image
                   src={item.image}
                   alt={item.title}
                   fill
-                  className="object-cover filter grayscale contrast-120 brightness-80 group-hover:brightness-95 group-hover:scale-105 transition-all duration-700"
+                  className="object-cover filter contrast-115 brightness-95 group-hover:brightness-105 group-hover:scale-105 transition-all duration-700"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#141210] via-transparent to-transparent" />
                 <div className="absolute top-2.5 left-2.5">
                   <span className={item.stamp}>{item.risk}</span>
                 </div>
-                <div className="absolute bottom-2 left-2.5 right-2.5 text-[10px] font-mono-tech text-[#E3DED3] bg-[#090909]/80 px-2 py-0.5 border border-[#2B2B2B]">
-                  {item.code}
-                </div>
               </div>
 
-              <div className="p-4 space-y-1">
-                <h4 className="font-title text-base text-[#E3DED3] group-hover:text-[#FFFFFF] tracking-wide">
+              <div className="p-4 space-y-1.5 bg-[#141210]">
+                <h4 className="font-title text-base text-[#E3DED3] group-hover:text-[#FF6873] tracking-wide transition-colors">
                   {item.title}
                 </h4>
-                <p className="text-[11px] text-[#77736C] font-mono-tech leading-snug line-clamp-2">
+                <p className="text-[11px] text-[#A69E8D] font-mono-tech leading-snug line-clamp-2">
                   {item.desc}
                 </p>
+                <div className="pt-2 flex items-center justify-between text-[10px] font-mono-tech text-[#77736C] border-t border-[#25221C]">
+                  <span>VER DOSSIÊ DE CAMPO</span>
+                  <ArrowRight className="w-3 h-3 text-[#AA2830] group-hover:translate-x-1 transition-transform" />
+                </div>
               </div>
             </Link>
           ))}
