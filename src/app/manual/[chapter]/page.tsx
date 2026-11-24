@@ -1,6 +1,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { CHAPTERS } from '@/lib/chaptersData';
 import Sidebar from '@/components/layout/Sidebar';
 import { 
@@ -34,6 +35,39 @@ export async function generateMetadata({ params }: ChapterPageProps) {
     description: chapter.summary
   };
 }
+
+const CHAPTER_HERO_IMAGES: Record<string, { src: string; caption: string; alt: string }> = {
+  'o-mundo': {
+    src: '/images/hero-highway.jpg',
+    caption: 'FOTOGRAFIA TÁTICA: O ermo urbano e a rodovia federal bloqueada no início da queda',
+    alt: 'Rodovia bloqueada e cidade em ruínas'
+  },
+  'combate': {
+    src: '/images/police-station.jpg',
+    caption: 'ARQUIVO DE CAMPO: Distrito policial municipal com barricadas civis e áreas de confronto armado',
+    alt: 'Distrito policial barricado e devastado'
+  },
+  'ferimentos-infeccao-morte': {
+    src: '/images/infected-tunnel.jpg',
+    caption: 'REGISTRO CONFIDENCIAL: Túnel metroviário com colônias fúngicas e espécime de infectado mutado',
+    alt: 'Túnel de metrô com infectado mutante e feixe de lanterna'
+  },
+  'exploracao-e-mapa': {
+    src: '/images/quarantine-zone.jpg',
+    caption: 'POSTO DE BLOQUEIO: Perímetro de quarentena militar com arame farpado e veículos táticos avariados',
+    alt: 'Posto de quarentena militar na rodovia'
+  },
+  'assentamentos-e-faccoes': {
+    src: '/images/survivor-camp.jpg',
+    caption: 'REDUTO DE SOBREVIVÊNCIA: Complexo fortificado com torres de vigia e energia por gerador',
+    alt: 'Santuário de sobreviventes em usina industrial'
+  },
+  'equipamento-e-itens': {
+    src: '/images/location-gas-station.jpg',
+    caption: 'INVENTÁRIO DO ERMO: Posto de abastecimento abandonado e loja de conveniência vandalizada',
+    alt: 'Posto de gasolina abandonado'
+  }
+};
 
 export default async function ChapterPage({ params }: ChapterPageProps) {
   const { chapter: chapterSlug } = await params;
@@ -96,6 +130,31 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
               {chapter.summary}
             </p>
           </div>
+
+          {/* Fotografia Temática Cinematográfica do Capítulo (quando disponível) */}
+          {CHAPTER_HERO_IMAGES[chapter.slug] && (
+            <div className="relative border border-[#2B2B2B] bg-[#0A0A0A] overflow-hidden group">
+              <div className="relative h-60 sm:h-80 w-full">
+                <Image
+                  src={CHAPTER_HERO_IMAGES[chapter.slug].src}
+                  alt={CHAPTER_HERO_IMAGES[chapter.slug].alt}
+                  fill
+                  className="object-cover filter grayscale contrast-120 brightness-80 group-hover:brightness-95 group-hover:scale-102 transition-all duration-700"
+                  sizes="(max-width: 1024px) 100vw, 75vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B] via-transparent to-transparent" />
+                <div className="absolute top-3 right-3">
+                  <span className="stamp-confidential text-[9px]">
+                    ARQUIVO ANEXADO
+                  </span>
+                </div>
+              </div>
+              <div className="p-3 bg-[#111111] border-t border-[#252525] flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono-tech text-[#77736C]">
+                <span>{CHAPTER_HERO_IMAGES[chapter.slug].caption}</span>
+                <span className="text-[#AA2830]">REGISTRO DE CAMPO // DH-SURVIVAL</span>
+              </div>
+            </div>
+          )}
 
           {/* Mobile TOC (Fast Jump) */}
           <div className="lg:hidden p-4 bg-[#111111] border border-[#2B2B2B] space-y-2">

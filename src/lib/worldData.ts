@@ -55,7 +55,7 @@ export interface WorldLocation {
   id: string;
   code: string;
   name: string;
-  category: 'Infraestrutura' | 'Saúde' | 'Comércio' | 'Refúgio' | 'Trânsito';
+  category: 'Infraestrutura' | 'Saúde' | 'Comércio' | 'Refúgio' | 'Trânsito' | 'Militar' | 'Segurança' | 'Transporte' | 'Assentamento';
   riskLevel: 'Baixo' | 'Moderado' | 'Crítico' | 'Morte Iminente';
   condition: string;
   imagePath: string;
@@ -432,6 +432,58 @@ export const WORLD_LOCATIONS: WorldLocation[] = [
     description: 'Instalação subterrânea construída sob o antigo prédio da prefeitura. Os geradores a diesel esgotaram-se, mas o acervo documental em papel e equipamentos analógicos permanecem intactos, protegidos da umidade e de incursões externas.',
     knownResources: ['Mapas topográficos da bacia hidrográfica', 'Rádios analógicos de reserva', 'Manuais de engenharia civil e elétrica', 'Arquivo histórico municipal'],
     tacticalNotes: 'Excelente candidato para posto de retransmissão de rádio ou arquivo seguro de registros da comunidade de sobreviventes.',
+    status: 'Explorado'
+  },
+  {
+    id: 'zona-quarentena-militar',
+    code: 'LOC-QZ-09',
+    name: 'Posto de Bloqueio Militar & Perímetro de Quarentena',
+    category: 'Militar',
+    riskLevel: 'Crítico',
+    condition: 'Cercas de arame farpado caídas, blindados destruídos e sinalizadores vencidos.',
+    imagePath: '/images/quarantine-zone.jpg',
+    description: 'Antiga barreira de contenção das forças de segurança montada nas rodovias de acesso. Veículos militares abandonados e barricadas reforçadas com concertina. Pichações alertam contra ruídos na área, indicando alta sensibilidade auditiva das hordas locais.',
+    knownResources: ['Cartuchos de munição militar (calibres 9mm e 5.56)', 'Capacetes e coletes táticos avariados', 'Sinalizadores pirotécnicos', 'Módulos de rádio veicular'],
+    tacticalNotes: 'Atenção extrema ao cruzar o asfalto quebrado: o arame enferrujado provoca ferimentos debastadores e ruído estridente se pisado.',
+    status: 'Bloqueado'
+  },
+  {
+    id: 'distrito-policial-barricado',
+    code: 'LOC-POL-03',
+    name: 'Distrito Policial Municipal (Central de Triagem)',
+    category: 'Segurança',
+    riskLevel: 'Morte Iminente',
+    condition: 'Lobby fortificado com mesas tombadas, manchas de sangue seco e celas violadas.',
+    imagePath: '/images/police-station.jpg',
+    description: 'Delegacia central que funcionou como último posto de triagem armada para civis nos primeiros dias da crise. Mesas e arquivos de aço foram improvisados como barricadas. Terminal de computador fosforescente ainda emite estática de backup.',
+    knownResources: ['Coldres e armas curtas de serviço', 'Algemas e chaves mestras de viatura', 'Registros criminais e fichas de ocorrência', 'Rações de emergência da reserva tática'],
+    tacticalNotes: 'Corredores estreitos com poucas rotas de fuga. Caminhantes confinados em salas fechadas podem arrombar portas fragilizadas com ruídos repentinos.',
+    status: 'Hostil'
+  },
+  {
+    id: 'tuneis-metro-subterraneo',
+    code: 'LOC-MET-06',
+    name: 'Túneis do Metrô Subterrâneo & Galerias de Esporos',
+    category: 'Transporte',
+    riskLevel: 'Morte Iminente',
+    condition: 'Inundação parcial com água fétida, colônias densas de fungos e esporos suspensos.',
+    imagePath: '/images/infected-tunnel.jpg',
+    description: 'A rede metroviária oferecia proteção contra o inverno e o caos da superfície, mas tornou-se uma armadilha fatal. A umidade constante e corpos em decomposição geraram colônias de fungos bioluminescentes. Mutados velozes caçam pelo eco no escuro.',
+    knownResources: ['Cabos de cobre e fiação de alta densidade', 'Ferramentas pesadas de manutenção metroviária', 'Lanternas industriais impermeáveis', 'Filtros respiratórios usados'],
+    tacticalNotes: 'Obrigatório o uso de máscaras com filtro contra partículas. Disparar armas de fogo neste túnel atrai imediatamente dezenas de infectados num raio de centenas de metros.',
+    status: 'Hostil'
+  },
+  {
+    id: 'santuario-usina-industrial',
+    code: 'LOC-REF-12',
+    name: 'Santuário da Usina (Complexo Industrial Fortificado)',
+    category: 'Assentamento',
+    riskLevel: 'Moderado',
+    condition: 'Muralhas de chapas corrugadas, gerador a diesel operando e ninhos de atiradores.',
+    imagePath: '/images/survivor-camp.jpg',
+    description: 'Antiga fábrica de processamento convertida em reduto civil permanente. O topo dos galpões conta com sacos de areia e vigilância 24 horas. Uma comunidade ativa cultiva pequenas hortas nos telhados e negocia com grupos que trazem suprimentos médicos.',
+    knownResources: ['Água fervida e rações preparadas', 'Bancadas de reparo mecânico e solda', 'Ponto de troca por Créditos de Sobrevivência (CS)', 'Alojamento seguro'],
+    tacticalNotes: 'Aproximação exige seguir o protocolo de rádio na frequência 142.8 MHz ou erguer pano branco. Sentinelas abrem fogo se identificarem atitude suspeita.',
     status: 'Explorado'
   }
 ];

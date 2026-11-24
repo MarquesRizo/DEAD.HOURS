@@ -76,7 +76,7 @@ export default function ArquivosHubPage() {
       desc: 'Catálogo de exploração tática de pontos de interesse com fotografias de campo, status de risco (Baixo a Extremo) e recursos conhecidos.',
       href: '/arquivos/locais',
       icon: MapPin,
-      meta: '4 Pontos Catalogados // Níveis de Ameaça'
+      meta: '8 Pontos Catalogados // Fotografias de Campo & Níveis de Ameaça'
     }
   ];
 

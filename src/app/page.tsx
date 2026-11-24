@@ -301,6 +301,89 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Galeria Cinematográfica de Reconhecimento do Ermo (Homenagem TLOU / Resident Evil) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2B2B2B] pb-3">
+          <div className="flex items-center gap-2 font-mono-tech text-xs font-bold text-[#AA2830] uppercase tracking-wider">
+            <Compass className="w-4 h-4" />
+            RECONHECIMENTO VISUAL // EVIDÊNCIAS FOTOGRÁFICAS DE CAMPO
+          </div>
+          <Link href="/arquivos/locais" className="font-mono-tech text-xs text-[#77736C] hover:text-[#E3DED3] transition-colors flex items-center gap-1">
+            <span>EXPLORAR CARTOGRAFIA COMPLETA</span>
+            <ArrowRight className="w-3.5 h-3.5 text-[#AA2830]" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              title: 'Zona de Quarentena',
+              code: 'LOC-QZ-09',
+              image: '/images/quarantine-zone.jpg',
+              risk: 'RISCO CRÍTICO',
+              stamp: 'stamp-warning',
+              desc: 'Barreiras militares rompidas e concertina de contenção na rodovia.'
+            },
+            {
+              title: 'Distrito Policial',
+              code: 'LOC-POL-03',
+              image: '/images/police-station.jpg',
+              risk: 'MORTE IMINENTE',
+              stamp: 'stamp-rpd',
+              desc: 'Lobby barricado com arquivos de aço e celas violadas.'
+            },
+            {
+              title: 'Túneis de Esporos',
+              code: 'LOC-MET-06',
+              image: '/images/infected-tunnel.jpg',
+              risk: 'INFESTAÇÃO ALTA',
+              stamp: 'stamp-confidential',
+              desc: 'Galerias de metrô inundadas com proliferação fúngica e caminhantes mutados.'
+            },
+            {
+              title: 'Santuário da Usina',
+              code: 'LOC-REF-12',
+              image: '/images/survivor-camp.jpg',
+              risk: 'MODERADO // ATIVO',
+              stamp: 'stamp-tech',
+              desc: 'Refúgio de sobreviventes fortificado com sentinelas armadas.'
+            }
+          ].map((item) => (
+            <Link
+              key={item.code}
+              href="/arquivos/locais"
+              className="border border-[#2B2B2B] bg-[#131313] hover:border-[#781D24] overflow-hidden group block transition-all flex flex-col justify-between"
+            >
+              <div className="relative h-44 w-full bg-[#090909] overflow-hidden">
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="object-cover filter grayscale contrast-120 brightness-80 group-hover:brightness-95 group-hover:scale-105 transition-all duration-700"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-transparent" />
+                <div className="absolute top-2.5 left-2.5">
+                  <span className={item.stamp}>{item.risk}</span>
+                </div>
+                <div className="absolute bottom-2 left-2.5 right-2.5 text-[10px] font-mono-tech text-[#E3DED3] bg-[#090909]/80 px-2 py-0.5 border border-[#2B2B2B]">
+                  {item.code}
+                </div>
+              </div>
+
+              <div className="p-4 space-y-1">
+                <h4 className="font-title text-base text-[#E3DED3] group-hover:text-[#FFFFFF] tracking-wide">
+                  {item.title}
+                </h4>
+                <p className="text-[11px] text-[#77736C] font-mono-tech leading-snug line-clamp-2">
+                  {item.desc}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* Seção Como Funciona a Campanha no WhatsApp */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         <div className="border border-[#781D24] bg-[#121212] p-6 sm:p-10 space-y-6">

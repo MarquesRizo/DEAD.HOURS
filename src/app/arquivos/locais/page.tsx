@@ -25,13 +25,13 @@ export default function LocaisZonasPage() {
       case 'Baixo':
         return 'badge-risk-low';
       case 'Moderado':
-        return 'badge-risk-moderate';
+        return 'badge-risk-medium';
       case 'Crítico':
-        return 'badge-risk-critical';
+        return 'badge-risk-high';
       case 'Morte Iminente':
         return 'badge-risk-extreme';
       default:
-        return 'badge-risk-moderate';
+        return 'badge-risk-medium';
     }
   };
 

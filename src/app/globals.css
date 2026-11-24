@@ -258,6 +258,57 @@ body {
   border-left-color: #781D24;
 }
 
+/* Resident Evil & The Last of Us Thematic Visual Polish */
+.hazard-strip {
+  background: repeating-linear-gradient(
+    -45deg,
+    #781D24,
+    #781D24 10px,
+    #131313 10px,
+    #131313 20px
+  );
+}
+
+.hazard-strip-amber {
+  background: repeating-linear-gradient(
+    -45deg,
+    #8C6D23,
+    #8C6D23 8px,
+    #131313 8px,
+    #131313 16px
+  );
+}
+
+.stamp-rpd {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1.5px solid #AA2830;
+  background: rgba(170, 40, 48, 0.15);
+  color: #E3DED3;
+  padding: 0.2rem 0.65rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(-1deg);
+  box-shadow: 0 0 8px rgba(170, 40, 48, 0.25);
+}
+
+.crt-scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 6px 100%;
+}
+
 /* Print CSS for Survivor Registration */
 @media print {
   body {

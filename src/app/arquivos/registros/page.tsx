@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import WorldNav from '@/components/world/WorldNav';
 import { DOCUMENT_RECORDS } from '@/lib/worldData';
 import { 
@@ -43,6 +44,33 @@ export default function RegistrosDocumentosPage() {
             <p className="font-mono-tech text-xs sm:text-sm text-[#C3BBA9] max-w-3xl leading-relaxed">
               Cartas pessoais, comunicados de evacuação fixados em estruturas públicas, despachos militares de reconhecimento e transcrições de transmissões de rádio resgatadas por patrulhas de sobreviventes.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Fotografia Documental do Arquivo Físico */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="relative border border-[#2B2B2B] bg-[#131313] overflow-hidden group">
+          <div className="relative h-56 sm:h-80 w-full">
+            <Image
+              src="/images/world-archives.jpg"
+              alt="Acervo documental e fichário físico preservado em bunker subterrâneo"
+              fill
+              className="object-cover filter grayscale contrast-125 brightness-75 group-hover:brightness-90 transition-all duration-700"
+              sizes="(max-width: 1200px) 100vw, 1200px"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#090909] via-transparent to-transparent" />
+            <div className="absolute top-4 left-4 flex gap-2">
+              <span className="stamp-rpd">EVIDÊNCIA N° DH-ACERVO-04</span>
+            </div>
+            <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 text-xs font-mono-tech text-[#E3DED3] bg-[#090909]/85 border border-[#2B2B2B] px-3.5 py-2 backdrop-blur-sm">
+              <span className="flex items-center gap-2">
+                <FileSearch className="w-3.5 h-3.5 text-[#AA2830]" />
+                FICHÁRIO GERAL // DOCUMENTAÇÃO RESGATADA DE EDIFÍCIOS PÚBLICOS
+              </span>
+              <span className="text-[#77736C]">REGISTRO DIEGÉTICO PERSISTENTE</span>
+            </div>
           </div>
         </div>
       </section>
